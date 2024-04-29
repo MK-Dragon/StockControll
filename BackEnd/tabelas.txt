@@ -1,0 +1,25 @@
+utilizadores
+    id
+    utilizador
+    senha
+    iv
+    activo
+
+colaboradores
+    id
+    num_colaborador
+    nome
+    activo
+
+armarios
+    id
+    nome
+    local
+    activo
+
+items
+    id
+    item
+    descricao
+    activo
+
