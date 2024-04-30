@@ -1,3 +1,4 @@
+# pip install pycryptodome
 from Crypto.Cipher import AES  # Importação do módulo AES da biblioteca pycryptodome
 from Crypto.Util.Padding import pad, unpad  # Importação de funções de preenchimento da biblioteca pycryptodome
 import base64  # Importação da biblioteca base64 para codificação e decodificação
@@ -13,6 +14,7 @@ def encriptar_dados(frase: str, chave =b'chave_16_bytes12') -> tuple:
 
     Retorna:
     tuple: Uma tupla contendo o vetor de inicialização (IV) e a frase encriptada.
+    :return: (iv + texto_encriptado)
     """
     cifra = AES.new(chave, AES.MODE_CBC)  # Criação do objeto de cifra AES com a chave fornecida
     texto_encriptado = cifra.encrypt(pad(frase.encode(), AES.block_size))  # Encripta a frase e aplica o preenchimento
