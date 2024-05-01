@@ -26,7 +26,8 @@ def setup_logger(name, log_file, level=logging.INFO):
 
 
 # Debug DB Read/Write/Delete
-debug_DataBase = setup_logger('creat database', 'logs/database.log')
+debug_DataBase = setup_logger('create database', 'logs/database.log')
+debug_DataBase.info('---//---')
 
 
 def Connect_to_DB():
@@ -131,18 +132,23 @@ def CreateDB():
     descricao TEXT NOT NULL,
     activo INTEGER)''')
 
+    ok_counter = 0
+    total_tried = 0
     for code in sql_code:
+        total_tried += 1
+        table = code.split()
         try:
-            table = code.split()
             cursor.execute(code)
             conn.commit()
             debug_DataBase.info(f"\tTabela {table[2]} criada ok")
+            ok_counter += 1
         except Exception as err:
             debug_DataBase.error(f'\tErr creating Table {table[2]}: {err}')
 
     # Close Connection
     cursor.close()
     conn.close()
+    return ok_counter, total_tried
 
 
 # Users:
@@ -210,27 +216,24 @@ def Validate_Login(user: str, password: str) -> bool:
         return False
 
 
-# Items
-def Add_Item(item_name:  str, description: str) -> bool:
+# Workers
+def Add_Worker(name: str, number: int = 0) -> bool:
     '''
-    :param item_name:
-    :param description:
+    Adding Worker to DB
+    :param name:
+    :param number:
     :return: True or False and logs why it failed
     '''
-
     debug_DataBase.info('---')
-    debug_DataBase.info("Inserting Item into DataBase")
-    debug_DataBase.info(f'\tItem name: {item_name}')
+    debug_DataBase.info("Inserting Worker into DataBase")
+    debug_DataBase.info(f'\tWorker name: {name}')
 
     # Validate name
-    item_name.strip()
-    if len(item_name) < 5:
-        debug_DataBase.error("\tItem name to short")
-        return False
+    name.strip()
 
-    sql_code = '''INSERT INTO items
-        (item, descricao, activo) values (?, ?, ?)'''
-    All_good = Ex_SQL_Code_Add_Data(sql_code, (item_name, description, 1))
+    sql_code = '''INSERT INTO colaboradores
+                (num_colaborador, nome, activo) values (?, ?, ?)'''
+    All_good = Ex_SQL_Code_Add_Data(sql_code, (number, name, 1))
     if All_good:
         debug_DataBase.info("\tEntry Added.")
         return True
@@ -267,19 +270,57 @@ def Add_Storage(name:str, location:str):
         return False
 
 
+# Items
+def Add_Item(item_name:  str, description: str) -> bool:
+    '''
+    :param item_name:
+    :param description:
+    :return: True or False and logs why it failed
+    '''
+
+    debug_DataBase.info('---')
+    debug_DataBase.info("Inserting Item into DataBase")
+    debug_DataBase.info(f'\tItem name: {item_name}')
+
+    # Validate name
+    item_name.strip()
+    if len(item_name) < 5:
+        debug_DataBase.error("\tItem name to short")
+        return False
+
+    sql_code = '''INSERT INTO items
+        (item, descricao, activo) values (?, ?, ?)'''
+    All_good = Ex_SQL_Code_Add_Data(sql_code, (item_name, description, 1))
+    if All_good:
+        debug_DataBase.info("\tEntry Added.")
+        return True
+    else:
+        return False
+
+
 
 if __name__ == '__main__':
     CreateDB()
 
     # Add test Users
-    #Add_User("Marco", '12345')
-
-    # Add test Items
-
-    # Add test Storage
+    Add_User('Marco', '12345')
+    Add_User('Polo', '54321')
 
     # Add test Colaboradores/workers
 
+    # Add test Items
+    Add_Item('Blue Pen', 'Normal Blue Pen')
+    Add_Item('Red Pen', 'Normal Red Pen')
+    Add_Item('Gloves S', 'Gloves size S')
+    Add_Item('Gloves M', 'Gloves size M')
+    Add_Item('Gloves L', 'Gloves size L')
+
+    # Add test Storage
+    Add_Storage('Warehouse', 'Main Warehouse')
+    Add_Storage('Box 1', 'Work place 1')
+
+
+    # Read Back All Data
     Read_Full_Table('utilizadores')
     Read_Full_Table('colaboradores')
     Read_Full_Table('armarios')
