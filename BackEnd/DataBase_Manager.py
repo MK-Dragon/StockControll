@@ -90,6 +90,12 @@ def Read_Full_Table(table:str) -> list[tuple]:
         conn.close()
         return None
 
+def Query_Data():
+    ''''''
+
+    # Connect to databse:
+    conn, cursor = Connect_to_DB()
+
 
 
 # Create DataBase!
@@ -144,6 +150,16 @@ def CreateDB():
         FOREIGN KEY (colaborador_id) REFERENCES colaboradores(id),
         FOREIGN KEY (item_id) REFERENCES items(id),
         FOREIGN KEY (armario_id) REFERENCES armarios(id))''')
+
+    # Stock
+    sql_code.append('''CREATE TABLE stock
+            (item_id INTEGER,
+            armario_id INTEGER,
+            quantidade INTEGER,
+            quan_min INTEGER,
+            quan_max INTEGER,
+            FOREIGN KEY (item_id) REFERENCES items(id),
+            FOREIGN KEY (armario_id) REFERENCES armarios(id))''')
 
     ok_counter = 0
     total_tried = 0
@@ -337,7 +353,8 @@ def Deliver_Item(user_id: int, worker_id: int, item_id: int, num: int, storage_i
 
     #
     sql_code = '''INSERT INTO entrega
-            (user_id, colaborador_id, item_id, quantidade, armario_id) values (?, ?, ?, ?, ?)'''
+            (data, user_id, colaborador_id, item_id, quantidade, armario_id)
+            values (datetime('now', 'localtime'), ?, ?, ?, ?, ?)'''
     All_good = Ex_SQL_Code_Add_Data(sql_code, (user_id, worker_id, item_id, num, storage_id))
     if All_good:
         debug_DataBase.info("\tEntry Added.")
@@ -345,6 +362,39 @@ def Deliver_Item(user_id: int, worker_id: int, item_id: int, num: int, storage_i
     else:
         return False
 
+def get_time_date(): # testing
+    # Connect to databse:
+    conn, cursor = Connect_to_DB()
+
+    # Fetch data!
+    sql_code = f"SELECT date(data), time(data) FROM entrega"
+    try:
+        cursor.execute(sql_code)
+        table_data = cursor.fetchall()
+
+        # Print and log data
+        debug_DataBase.info('---')
+        debug_DataBase.info(f"Listing all entrega:")
+        print(f"\nTable entrega:")
+        for entry in table_data:
+            debug_DataBase.info(f'\t{entry}')
+            print('\t', entry)
+        # Close Connection
+        cursor.close()
+        conn.close()
+        return table_data
+    except Exception as err:
+        debug_DataBase.error(f'\tError: {err}')
+        # Close Connection
+        cursor.close()
+        conn.close()
+        return None
+
+def get_time_date_2():
+    data = Read_Full_Table('entrega')
+    for line in data:
+        date, time = line[1].split()
+        print(f'{line[0]} - {date} - {time}')
 
 
 if __name__ == '__main__':
@@ -371,6 +421,9 @@ if __name__ == '__main__':
 
 
     # Add Entries
+    #Deliver_Item(user_id=1, worker_id=1, item_id=1, storage_id=1, num=1)
+    #Deliver_Item(user_id=2, worker_id=2, item_id=3, storage_id=2, num=1)
+    #Deliver_Item(user_id=2, worker_id=2, item_id=2, storage_id=1, num=2)
 
 
 
@@ -380,3 +433,6 @@ if __name__ == '__main__':
     Read_Full_Table('armarios')
     Read_Full_Table('items')
     Read_Full_Table('entrega')
+
+    #get_time_date()
+    #get_time_date_2()

@@ -7,7 +7,7 @@
     <list default="true" id="408602b7-2bc0-4bab-8531-a5eae17ac783" name="Changes" comment="Update">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/BackEnd/DataBase_Manager.py" beforeDir="false" afterPath="$PROJECT_DIR$/BackEnd/DataBase_Manager.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/BackEnd/Testing_DataBase.py" beforeDir="false" afterPath="$PROJECT_DIR$/BackEnd/Testing_DataBase.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/BackEnd/ReadMe.txt" beforeDir="false" afterPath="$PROJECT_DIR$/BackEnd/ReadMe.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/BackEnd/tabelas.txt" beforeDir="false" afterPath="$PROJECT_DIR$/BackEnd/tabelas.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -217,7 +217,15 @@
       <option name="project" value="LOCAL" />
       <updated>1714523365405</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="Update">
+      <option name="closed" value="true" />
+      <created>1714559506103</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1714559506103</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
