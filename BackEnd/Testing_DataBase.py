@@ -86,6 +86,36 @@ class Test_DataBase(unittest.TestCase):
         self.assertEqual(c, False)
 
 
+    # Workers:
+    def test_B_new_worker(self):
+        '''Teste adding user 2x'''
+        # Adding user
+        a = DataBase_Manager.Add_Worker('Zé Maria', '12345')
+        message = f'Adding worker name and number [{a}] (expect True)'
+        if a == True:
+            report.info(message)
+        else:
+            report.error(message)
+
+        b = DataBase_Manager.Add_Worker('Manuel Silva')
+        message = f'Adding worker name and NO number [{b}] (expect True)'
+        if b == True:
+            report.info(message)
+        else:
+            report.error(message)
+
+        c = DataBase_Manager.Add_Worker('Marco', '12345')
+        message = f'Adding worker number already exists [{c}] (expect False)'
+        if c == False:
+            report.info(message)
+        else:
+            report.error(message)
+
+        self.assertEqual(a, True)
+        self.assertEqual(b, True)
+        self.assertEqual(c, False)
+
+
     # Items:
     def test_B_add_items(self):
         a = DataBase_Manager.Add_Item('Blue Pen', 'Normal Blue Pen')
@@ -142,6 +172,12 @@ class Test_DataBase(unittest.TestCase):
         self.assertEqual(a, True)
         self.assertEqual(b, True)
         self.assertEqual(c, False)
+
+
+
+    # Delivering item:
+    def test_C_add_entry(self):
+        pass
 
 
 

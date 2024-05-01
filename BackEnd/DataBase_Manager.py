@@ -1,6 +1,5 @@
 # DataBase
 import sqlite3
-import os
 import Encrypt_Decrypt
 # Extras
 import logging
@@ -75,7 +74,7 @@ def Read_Full_Table(table:str) -> list[tuple]:
 
         # Print and log data
         debug_DataBase.info('---')
-        debug_DataBase.info(f"Listing all Users:")
+        debug_DataBase.info(f"Listing all {table}:")
         print(f"\nTable {table}:")
         for entry in table_data:
             debug_DataBase.info(f'\t{entry}')
@@ -131,6 +130,20 @@ def CreateDB():
     item TEXT NOT NULL UNIQUE,
     descricao TEXT NOT NULL,
     activo INTEGER)''')
+
+    # Item Delivery
+    sql_code.append('''CREATE TABLE entrega
+        (id INTEGER PRIMARY KEY,
+        data REAL,
+        user_id INTEGER,
+        colaborador_id INTEGER,
+        item_id INTEGER,
+        quantidade INTEGER,
+        armario_id INTEGER,
+        FOREIGN KEY (user_id) REFERENCES utilizadores(id),
+        FOREIGN KEY (colaborador_id) REFERENCES colaboradores(id),
+        FOREIGN KEY (item_id) REFERENCES items(id),
+        FOREIGN KEY (armario_id) REFERENCES armarios(id))''')
 
     ok_counter = 0
     total_tried = 0
@@ -217,7 +230,7 @@ def Validate_Login(user: str, password: str) -> bool:
 
 
 # Workers
-def Add_Worker(name: str, number: int = 0) -> bool:
+def Add_Worker(name: str, number: int = None) -> bool:
     '''
     Adding Worker to DB
     :param name:
@@ -231,9 +244,15 @@ def Add_Worker(name: str, number: int = 0) -> bool:
     # Validate name
     name.strip()
 
-    sql_code = '''INSERT INTO colaboradores
-                (num_colaborador, nome, activo) values (?, ?, ?)'''
-    All_good = Ex_SQL_Code_Add_Data(sql_code, (number, name, 1))
+    if number == None:
+        sql_code = '''INSERT INTO colaboradores
+                    (nome, activo) values (?, ?)'''
+        All_good = Ex_SQL_Code_Add_Data(sql_code, (name, 1))
+    else:
+        sql_code = '''INSERT INTO colaboradores
+                        (num_colaborador, nome, activo) values (?, ?, ?)'''
+        All_good = Ex_SQL_Code_Add_Data(sql_code, (number, name, 1))
+
     if All_good:
         debug_DataBase.info("\tEntry Added.")
         return True
@@ -298,6 +317,35 @@ def Add_Item(item_name:  str, description: str) -> bool:
         return False
 
 
+# Entries
+def Deliver_Item(user_id: int, worker_id: int, item_id: int, num: int, storage_id: int) -> bool:
+    '''
+
+    :param user_id:
+    :param worker_id:
+    :param item_id:
+    :param num:
+    :param storage_id:
+    :return: True or False and logs why it failed
+    '''
+
+    debug_DataBase.info('---')
+    debug_DataBase.info("Deliver Item")
+    debug_DataBase.info(f'\tItem name: ??')
+
+    # get date and time
+
+    #
+    sql_code = '''INSERT INTO entrega
+            (user_id, colaborador_id, item_id, quantidade, armario_id) values (?, ?, ?, ?, ?)'''
+    All_good = Ex_SQL_Code_Add_Data(sql_code, (user_id, worker_id, item_id, num, storage_id))
+    if All_good:
+        debug_DataBase.info("\tEntry Added.")
+        return True
+    else:
+        return False
+
+
 
 if __name__ == '__main__':
     CreateDB()
@@ -307,6 +355,8 @@ if __name__ == '__main__':
     Add_User('Polo', '54321')
 
     # Add test Colaboradores/workers
+    Add_Worker('Marco', 12345)
+    Add_Worker('Rita', 4596)
 
     # Add test Items
     Add_Item('Blue Pen', 'Normal Blue Pen')
@@ -320,8 +370,13 @@ if __name__ == '__main__':
     Add_Storage('Box 1', 'Work place 1')
 
 
+    # Add Entries
+
+
+
     # Read Back All Data
     Read_Full_Table('utilizadores')
     Read_Full_Table('colaboradores')
     Read_Full_Table('armarios')
     Read_Full_Table('items')
+    Read_Full_Table('entrega')

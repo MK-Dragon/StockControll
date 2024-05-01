@@ -8,6 +8,7 @@
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/BackEnd/DataBase_Manager.py" beforeDir="false" afterPath="$PROJECT_DIR$/BackEnd/DataBase_Manager.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/BackEnd/Testing_DataBase.py" beforeDir="false" afterPath="$PROJECT_DIR$/BackEnd/Testing_DataBase.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/BackEnd/tabelas.txt" beforeDir="false" afterPath="$PROJECT_DIR$/BackEnd/tabelas.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -45,29 +46,30 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Python tests.Python tests for Testing_DataBase.Test_DataBase.executor": "Run",
-    "Python tests.Python tests for Testing_DataBase.Test_DataBase.test_A_create_db.executor": "Run",
-    "Python tests.Python tests for Testing_DataBase.Test_DataBase.test_B_add_storage.executor": "Run",
-    "Python tests.Python tests for Testing_DataBase.Test_DataBase.test_B_login.executor": "Run",
-    "Python tests.Python tests for Testing_DataBase.Test_DataBase.test_B_new_user.executor": "Run",
-    "Python tests.Python tests for Testing_DataBase.Test_DataBase.test_add_existing_user.executor": "Run",
-    "Python tests.Python tests for Testing_DataBase.Test_DataBase.test_add_items.executor": "Run",
-    "Python tests.Python tests for Testing_DataBase.Test_DataBase.test_add_storage.executor": "Run",
-    "Python tests.Python tests for Testing_DataBase.Test_DataBase.test_new_user.executor": "Run",
-    "Python tests.Python tests for Testing_DataBase.Test_DataBase.test_right_login.executor": "Run",
-    "Python tests.Python tests for Testing_DataBase.Test_DataBase.test_wrong_login.executor": "Run",
-    "Python tests.Python tests for Testing_DataBase.Test_DataBase.test_wrong_user.executor": "Run",
-    "Python tests.Python tests in Testing_DataBase.py.executor": "Run",
-    "Python.DataBase_Manager.executor": "Run",
-    "Python.main.executor": "Run",
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "master",
-    "last_opened_file_path": "C:/Users/macca/PycharmProjects/StockContol/BackEnd"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Python tests.Python tests for Testing_DataBase.Test_DataBase.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests for Testing_DataBase.Test_DataBase.test_A_create_db.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests for Testing_DataBase.Test_DataBase.test_B_add_storage.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests for Testing_DataBase.Test_DataBase.test_B_login.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests for Testing_DataBase.Test_DataBase.test_B_new_user.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests for Testing_DataBase.Test_DataBase.test_B_new_worker.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests for Testing_DataBase.Test_DataBase.test_add_existing_user.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests for Testing_DataBase.Test_DataBase.test_add_items.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests for Testing_DataBase.Test_DataBase.test_add_storage.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests for Testing_DataBase.Test_DataBase.test_new_user.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests for Testing_DataBase.Test_DataBase.test_right_login.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests for Testing_DataBase.Test_DataBase.test_wrong_login.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests for Testing_DataBase.Test_DataBase.test_wrong_user.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests in Testing_DataBase.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python.DataBase_Manager.executor&quot;: &quot;Run&quot;,
+    &quot;Python.main.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/macca/PycharmProjects/StockContol/BackEnd&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="C:\Users\macca\PycharmProjects\StockContol\BackEnd" />
@@ -95,21 +97,6 @@
       <option name="MODULE_MODE" value="false" />
       <option name="REDIRECT_INPUT" value="false" />
       <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="Python tests for Testing_DataBase.Test_DataBase.test_A_create_db" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
-      <module name="StockContol" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/BackEnd" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;Testing_DataBase.Test_DataBase.test_A_create_db&quot;" />
-      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
       <method v="2" />
     </configuration>
     <configuration name="Python tests for Testing_DataBase.Test_DataBase.test_B_add_storage" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
@@ -142,6 +129,21 @@
       <option name="_new_targetType" value="&quot;PYTHON&quot;" />
       <method v="2" />
     </configuration>
+    <configuration name="Python tests for Testing_DataBase.Test_DataBase.test_B_new_worker" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
+      <module name="StockContol" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/BackEnd" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="_new_additionalArguments" value="&quot;&quot;" />
+      <option name="_new_target" value="&quot;Testing_DataBase.Test_DataBase.test_B_new_worker&quot;" />
+      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
+      <method v="2" />
+    </configuration>
     <configuration name="Python tests in Testing_DataBase.py" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
       <module name="StockContol" />
       <option name="ENV_FILES" value="" />
@@ -160,10 +162,10 @@
     <recent_temporary>
       <list>
         <item itemvalue="Python.DataBase_Manager" />
+        <item itemvalue="Python tests.Python tests in Testing_DataBase.py" />
+        <item itemvalue="Python tests.Python tests for Testing_DataBase.Test_DataBase.test_B_new_worker" />
         <item itemvalue="Python tests.Python tests for Testing_DataBase.Test_DataBase.test_B_add_storage" />
         <item itemvalue="Python tests.Python tests for Testing_DataBase.Test_DataBase.test_B_login" />
-        <item itemvalue="Python tests.Python tests in Testing_DataBase.py" />
-        <item itemvalue="Python tests.Python tests for Testing_DataBase.Test_DataBase.test_A_create_db" />
       </list>
     </recent_temporary>
   </component>
@@ -207,7 +209,15 @@
       <option name="project" value="LOCAL" />
       <updated>1714504599120</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="Update">
+      <option name="closed" value="true" />
+      <created>1714523365405</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1714523365405</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
