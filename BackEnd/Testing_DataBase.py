@@ -184,20 +184,23 @@ class Test_DataBase(unittest.TestCase):
     def test_C_read_storage(self):
         item = 3
         storage = 2
-        a = DataBase_Manager.Query_Storage_Data(item, storage)
+        a = DataBase_Manager.Get_Stock_Data(item, storage)
         report.info(f'it[{item}] st[{storage}] = {a}')
 
         item = 3
         storage = 7
-        b = DataBase_Manager.Query_Storage_Data(item, storage)
+        b = DataBase_Manager.Get_Stock_Data(item, storage)
         report.info(f'it[{item}] st[{storage}] = {b}')
 
         self.assertEqual(len(a) <= 1, True)
         self.assertEqual(len(b) == 0, True)
 
+    def test_D_update_stocks(self):
+        DataBase_Manager.Update_Stock(item_id=1, storage_id=2, units=-1)
+
     def test_C_first_stockup(self):
-        DataBase_Manager.First_Stockup(1, 1, 150, 50, 250)
-        a = DataBase_Manager.First_Stockup(1, 1, 150, 50, 250)
+        DataBase_Manager.First_Stock(1, 1, 150, 50, 250)
+        a = DataBase_Manager.First_Stock(1, 1, 150, 50, 250)
 
         message = f'First Stock up [{a}] (expected False)'
         if a == False:
@@ -206,6 +209,8 @@ class Test_DataBase(unittest.TestCase):
             report.error(message)
 
         self.assertEqual(a, False)
+
+
 
 
 if __name__ == '__main__':

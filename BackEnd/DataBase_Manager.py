@@ -29,6 +29,7 @@ debug_DataBase = setup_logger('create database', 'logs/database.log')
 debug_DataBase.info('---//---')
 
 
+# Core SQL Functions:
 def Connect_to_DB():
     '''Returns a Connection and a Cursor SQL Objects'''
     try:
@@ -38,12 +39,16 @@ def Connect_to_DB():
     except Exception as err:
         debug_DataBase.error(f'Err Opening DB: {err}')
 
-def Ex_SQL_Code_Add_Data(code:str, values:tuple) -> bool:
-    # Connect to databse:
+def Ex_SQL_Code(code:str, values:tuple = None) -> bool:
+    '''Executes Code and Returns True or False if it fails'''
+    # Connect to database:
     conn, cursor = Connect_to_DB()
     try:
         # execute and commit
-        cursor.execute(code, values)
+        if values == None:
+            cursor.execute(code)
+        else:
+            cursor.execute(code, values)
         conn.commit()
         # Close Connection and return True
         cursor.close()
@@ -57,8 +62,41 @@ def Ex_SQL_Code_Add_Data(code:str, values:tuple) -> bool:
         conn.close()
         return False
 
+def Query_SQL_Code(query_code:str, values:tuple = None) -> list[tuple]:
+    '''
+    Executes the code and returns Query data or False if it fails
+    :return: list[tuple] or False if fails
+    '''
+    # Connect to databse:
+    conn, cursor = Connect_to_DB()
+    try:
+        # Fetch data!
+        if values == None:
+            cursor.execute(query_code)
+        else:
+            cursor.execute(query_code, values)
+        table_data = cursor.fetchall()
+        # Log results:
+        debug_DataBase.info(f"\tQuery Result:")
+        for entry in table_data:
+            debug_DataBase.info(f'\t\t{entry}')
+        # Close Connection
+        cursor.close()
+        conn.close()
+        return table_data
+
+    except Exception as err:
+        debug_DataBase.error(f'\tError: {err}')
+        # Close Connection
+        cursor.close()
+        conn.close()
+        return False
+
+
 def Read_Full_Table(table:str) -> list[tuple]:
     '''
+    ** Deprecated ** -> user -> Query_SQL_Code
+    ** for debug only **
     Fetches data from table
     :param table: name of table
     :return: list[tuple] or None if fails
@@ -89,7 +127,6 @@ def Read_Full_Table(table:str) -> list[tuple]:
         cursor.close()
         conn.close()
         return None
-
 
 
 
@@ -176,7 +213,8 @@ def CreateDB():
     return ok_counter, total_tried
 
 
-# Users:
+
+# Users Functions:
 def Add_User(username: str, password: str) -> bool:
     '''
     Inputs user into DataBase
@@ -201,13 +239,14 @@ def Add_User(username: str, password: str) -> bool:
     sql_code = '''INSERT INTO utilizadores
     (utilizador, senha, iv, activo) values (?, ?, ?, ?)'''
 
-    All_good = Ex_SQL_Code_Add_Data(sql_code, (username, password_encryped, iv, 1))
+    All_good = Ex_SQL_Code(sql_code, (username, password_encryped, iv, 1))
     if All_good:
         debug_DataBase.info("\tUser Added.")
         return True
     else:
         return False
 
+# TODO: Add Edit User info
 
 def Validate_Login(user: str, password: str) -> bool:
     '''Login
@@ -217,18 +256,19 @@ def Validate_Login(user: str, password: str) -> bool:
     debug_DataBase.info('---')
     debug_DataBase.info("Validate Login")
 
-    conn, cursor = Connect_to_DB()
+    users = Query_SQL_Code("SELECT * FROM utilizadores")
 
-    cursor.execute("SELECT * FROM utilizadores")
-    users = cursor.fetchall()
+    if users == False:
+        debug_DataBase.error("\tFail to Query DB")
+        return False
 
-    user_data = False
+    user_data = None
     for i in users:
         if i[1] == user:
             user_data = i
             break
 
-    if not user_data:
+    if user_data == None:
         debug_DataBase.error("\tUsername not in DataBase!")
         return False
 
@@ -237,11 +277,12 @@ def Validate_Login(user: str, password: str) -> bool:
         debug_DataBase.info(f"\tUser: {user} Loged in!")
         return True
     else:
-        debug_DataBase.error("\tWrong Username or Password!")
+        debug_DataBase.error(f"\tWrong Username or Password! {user}")
         return False
 
 
-# Workers
+
+# Workers Functions:
 def Add_Worker(name: str, number: int = None) -> bool:
     '''
     Adding Worker to DB
@@ -259,11 +300,11 @@ def Add_Worker(name: str, number: int = None) -> bool:
     if number == None:
         sql_code = '''INSERT INTO colaboradores
                     (nome, activo) values (?, ?)'''
-        All_good = Ex_SQL_Code_Add_Data(sql_code, (name, 1))
+        All_good = Ex_SQL_Code(sql_code, (name, 1))
     else:
         sql_code = '''INSERT INTO colaboradores
                         (num_colaborador, nome, activo) values (?, ?, ?)'''
-        All_good = Ex_SQL_Code_Add_Data(sql_code, (number, name, 1))
+        All_good = Ex_SQL_Code(sql_code, (number, name, 1))
 
     if All_good:
         debug_DataBase.info("\tEntry Added.")
@@ -271,8 +312,11 @@ def Add_Worker(name: str, number: int = None) -> bool:
     else:
         return False
 
+# TODO: Add Edit Worker info
 
-# Storage
+
+
+# Storage Functions:
 def Add_Storage(name:str, location:str):
     '''
         :param name:
@@ -293,60 +337,88 @@ def Add_Storage(name:str, location:str):
 
     sql_code = '''INSERT INTO armarios
             (nome, local, activo) values (?, ?, ?)'''
-    All_good = Ex_SQL_Code_Add_Data(sql_code, (name, location, 1))
+    All_good = Ex_SQL_Code(sql_code, (name, location, 1))
     if All_good:
         debug_DataBase.info("\tEntry Added.")
         return True
     else:
         return False
 
-def Query_Storage_Data(item_id:int, storage_id:int) -> list[tuple]:
+def Update_Stock(item_id:int, storage_id, units:int) -> bool:
+    '''
+    Don't forget to do a <storage_entry_exists> before the update!
+    :return: False if it fails
+    '''
+    debug_DataBase.info('---')
+    debug_DataBase.info("Update Stock")
+
+    # SAFE GUARD - if it doesn't exist ask user to create one!
+    if not stock_entry_exists(item_id=item_id, storage_id=storage_id):
+        debug_DataBase.error("\t** Ask User to Create Initial Stock ** - Safe Guard!!!")
+        return False
+
+    stock = Get_Stock_Data(item_id=item_id, storage_id=storage_id)
+
+    # Update Stock
+    sql_code = '''UPDATE stock SET (quantidade) = (?)
+                WHERE item_id = (?) AND armario_id =(?)'''
+    All_good = Ex_SQL_Code(sql_code, (units, item_id, storage_id))
+    if All_good:
+        debug_DataBase.info(f'\tItem: {item_id} - Storage {storage_id} -> {units}unit')
+        return True
+    else:
+        return False
+
+def Get_Stock_Data(item_id:int = None, storage_id:int = None) -> list[tuple]:
     '''
     Takes Item and Storage ID
     Returns List[Tuple] -> []
+
+    Options:
+    Only item -> item in ALL storages
+    Only storage -> all items in storage
+    item + Storage -> item in specified storage :)
     '''
 
-    # Connect to databse:
-    conn, cursor = Connect_to_DB()
+    debug_DataBase.info(f"\tQuery item [{item_id}] storage [{storage_id}]:")
+    values:tuple = ()
+    if storage_id == None: # Only item -> item in ALL storages
+        sql_code = f"SELECT * FROM stock WHERE item_id = (?)"
+        values = (item_id,)
+    elif item_id == None: # Only storage -> all items in storage
+        sql_code = f"SELECT * FROM stock WHERE armario_id = (?)"
+        values = (storage_id,)
+    else: # item + Storage -> item in specified storage :)
+        sql_code = f"SELECT * FROM stock WHERE item_id = (?) AND armario_id = (?)"
+        values = (item_id, storage_id)
 
-    # Fetch data!
-    sql_code = f"SELECT * FROM stock WHERE item_id = (?) AND armario_id = (?)"
-    try:
-        cursor.execute(sql_code, (item_id, storage_id))
-        table_data = cursor.fetchall()
+    data = Query_SQL_Code(sql_code, values)
+    return data
 
-        # Print and log data
-        debug_DataBase.info('---')
-        debug_DataBase.info(f"Quary item [{item_id}] storage [{storage_id}]: {table_data}")
-        for entry in table_data:
-            debug_DataBase.info(f'\t{entry}')
-            print('\t', entry)
-        # Close Connection
-        cursor.close()
-        conn.close()
-        return table_data
-    except Exception as err:
-        debug_DataBase.error(f'\tError: {err}')
-        # Close Connection
-        cursor.close()
-        conn.close()
-        return None
+def stock_entry_exists(item_id:int, storage_id:int) -> bool:
+    '''
+    if storage_entry_exists returns True
+    else returns False
+    '''
+    if len(Get_Stock_Data(item_id=item_id, storage_id=storage_id)) > 0:
+        debug_DataBase.info(f'\tItem [{item_id}] - Storage [{storage_id}] Exists!')
+        return True
+    else:
+        debug_DataBase.info(f'\tItem [{item_id}] - Storage [{storage_id}] Does NOT Exists!')
+        return False
 
-
-
-def First_Stockup(storage_id:int, item_id:int, units:int, unit_min:int = 0, unit_max:int = 0):
+def First_Stock(storage_id:int, item_id:int, units:int, unit_min:int = 0, unit_max:int = 0):
     debug_DataBase.info('---')
     debug_DataBase.info("Adding 1st Stock")
 
-    if len(Query_Storage_Data(item_id=item_id, storage_id=storage_id)) > 0:
-        debug_DataBase.error('\tAlready exists')
+    if stock_entry_exists(storage_id=storage_id, item_id=item_id):
         return False
 
     sql_code = '''INSERT INTO stock
                 (item_id, armario_id, quantidade, quan_min, quan_max) values (?, ?, ?, ?, ?)'''
-    All_good = Ex_SQL_Code_Add_Data(sql_code, (item_id, storage_id, units, unit_min, unit_max))
+    All_good = Ex_SQL_Code(sql_code, (item_id, storage_id, units, unit_min, unit_max))
     if All_good:
-        debug_DataBase.info(f'\tItem [{item_id}] - Storage [{storage_id}]')
+        debug_DataBase.info(f'\tItem [{item_id}] - Storage [{storage_id}] Added')
         return True
     else:
         return False
@@ -372,12 +444,14 @@ def Add_Item(item_name:  str, description: str) -> bool:
 
     sql_code = '''INSERT INTO items
         (item, descricao, activo) values (?, ?, ?)'''
-    All_good = Ex_SQL_Code_Add_Data(sql_code, (item_name, description, 1))
+    All_good = Ex_SQL_Code(sql_code, (item_name, description, 1))
     if All_good:
         debug_DataBase.info("\tEntry Added.")
         return True
     else:
         return False
+
+# TODO: Add Edit Item
 
 
 # Entries
@@ -396,56 +470,28 @@ def Deliver_Item(user_id: int, worker_id: int, item_id: int, num: int, storage_i
     debug_DataBase.info("Deliver Item")
     debug_DataBase.info(f'\tItem name: ??')
 
-    # get date and time
+    # if storage entry doesn't exist -> make place holder
+    if stock_entry_exists(item_id=item_id, storage_id=storage_id):
+        First_Stock(item_id=item_id, storage_id=storage_id, units=0)
+        debug_DataBase.error('\tPlace Holder Entry Added')
 
-    #
+    # Create delivery entry
     sql_code = '''INSERT INTO entrega
             (data, user_id, colaborador_id, item_id, quantidade, armario_id)
             values (datetime('now', 'localtime'), ?, ?, ?, ?, ?)'''
-    All_good = Ex_SQL_Code_Add_Data(sql_code, (user_id, worker_id, item_id, num, storage_id))
+    All_good = Ex_SQL_Code(sql_code, (user_id, worker_id, item_id, num, storage_id))
     if All_good:
-        debug_DataBase.info("\tEntry Added.")
+        debug_DataBase.info("\tDelivery Entry Added.")
+
         return True
     else:
         return False
 
-def get_time_date(): # testing
-    # Connect to databse:
-    conn, cursor = Connect_to_DB()
 
-    # Fetch data!
-    sql_code = f"SELECT date(data), time(data) FROM entrega"
-    try:
-        cursor.execute(sql_code)
-        table_data = cursor.fetchall()
-
-        # Print and log data
-        debug_DataBase.info('---')
-        debug_DataBase.info(f"Listing all entrega:")
-        print(f"\nTable entrega:")
-        for entry in table_data:
-            debug_DataBase.info(f'\t{entry}')
-            print('\t', entry)
-        # Close Connection
-        cursor.close()
-        conn.close()
-        return table_data
-    except Exception as err:
-        debug_DataBase.error(f'\tError: {err}')
-        # Close Connection
-        cursor.close()
-        conn.close()
-        return None
-
-def get_time_date_2():
-    data = Read_Full_Table('entrega')
-    for line in data:
-        date, time = line[1].split()
-        print(f'{line[0]} - {date} - {time}')
 
 
 if __name__ == '__main__':
-    CreateDB()
+    '''CreateDB()
 
     # Add test Users
     Add_User('Marco', '12345')
@@ -490,7 +536,7 @@ if __name__ == '__main__':
 
     #
     #Query_Storage_Data(1, 1)
-    #Query_Storage_Data(2, 3)
+    #Query_Storage_Data(2, 3)'''
 
 
 
@@ -501,6 +547,3 @@ if __name__ == '__main__':
     Read_Full_Table('items')
     Read_Full_Table('entrega')
     Read_Full_Table('stock')
-
-    #get_time_date()
-    #get_time_date_2()
