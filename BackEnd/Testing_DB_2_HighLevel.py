@@ -22,7 +22,7 @@ report = setup_logger('Test log 2', 'logs/test_report_2.log')
 report.info('---//---')
 
 class Test_DataBase_2(unittest.TestCase):
-    def test_A_query_stock(self):
+    def test_A_get_stock(self):
         report.info(f'\t---')
         report.info(f'Query Stock:')
         item = 1
@@ -47,6 +47,10 @@ class Test_DataBase_2(unittest.TestCase):
         self.assertEqual(len(a) == 1, True)
         self.assertEqual(len(b) > 1, True)
         self.assertEqual(len(c) > 1, True)
+
+    def test_A_deliver_item_to_worker(self):
+        a = DataBase_Manager.Deliver_Item(item_id=1, storage_id=2, num=-1, worker_id=1, user_id=1)
+        self.assertEqual(a, True)
 
 
 if __name__ == '__main__':

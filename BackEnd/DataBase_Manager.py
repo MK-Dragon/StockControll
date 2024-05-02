@@ -246,7 +246,7 @@ def Add_User(username: str, password: str) -> bool:
     else:
         return False
 
-# TODO: Add Edit User info
+# TODO [nice to have]: Add Edit User info
 
 def Validate_Login(user: str, password: str) -> bool:
     '''Login
@@ -312,7 +312,7 @@ def Add_Worker(name: str, number: int = None) -> bool:
     else:
         return False
 
-# TODO: Add Edit Worker info
+# TODO [nice to have]: Add Edit Worker info
 
 
 
@@ -344,7 +344,7 @@ def Add_Storage(name:str, location:str):
     else:
         return False
 
-def Update_Stock(item_id:int, storage_id, units:int) -> bool:
+def Update_Stock(item_id:int, storage_id:int, units:int) -> bool:
     '''
     Don't forget to do a <storage_entry_exists> before the update!
     :return: False if it fails
@@ -358,13 +358,15 @@ def Update_Stock(item_id:int, storage_id, units:int) -> bool:
         return False
 
     stock = Get_Stock_Data(item_id=item_id, storage_id=storage_id)
+    print(f'Stock {stock[0][2]}')
+    new_unit_val = stock[0][2] + units
 
     # Update Stock
     sql_code = '''UPDATE stock SET (quantidade) = (?)
                 WHERE item_id = (?) AND armario_id =(?)'''
-    All_good = Ex_SQL_Code(sql_code, (units, item_id, storage_id))
+    All_good = Ex_SQL_Code(sql_code, (new_unit_val, item_id, storage_id))
     if All_good:
-        debug_DataBase.info(f'\tItem: {item_id} - Storage {storage_id} -> {units}unit')
+        debug_DataBase.info(f'\tItem: {item_id} - Storage {storage_id} -> {stock[0][2]} + {units} = {new_unit_val}')
         return True
     else:
         return False
@@ -423,6 +425,8 @@ def First_Stock(storage_id:int, item_id:int, units:int, unit_min:int = 0, unit_m
     else:
         return False
 
+# TODO [Must Have]: Add ReStock: transfer x units: storage_a -> storage_b // store -> storage_b
+
 
 # Items
 def Add_Item(item_name:  str, description: str) -> bool:
@@ -451,7 +455,7 @@ def Add_Item(item_name:  str, description: str) -> bool:
     else:
         return False
 
-# TODO: Add Edit Item
+# TODO [nice to have]: Add Edit Item
 
 
 # Entries
@@ -461,7 +465,7 @@ def Deliver_Item(user_id: int, worker_id: int, item_id: int, num: int, storage_i
     :param user_id:
     :param worker_id:
     :param item_id:
-    :param num:
+    :param num: (-) Take item / (+) Add item ^_^
     :param storage_id:
     :return: True or False and logs why it failed
     '''
@@ -471,7 +475,7 @@ def Deliver_Item(user_id: int, worker_id: int, item_id: int, num: int, storage_i
     debug_DataBase.info(f'\tItem name: ??')
 
     # if storage entry doesn't exist -> make place holder
-    if stock_entry_exists(item_id=item_id, storage_id=storage_id):
+    if not stock_entry_exists(item_id=item_id, storage_id=storage_id):
         First_Stock(item_id=item_id, storage_id=storage_id, units=0)
         debug_DataBase.error('\tPlace Holder Entry Added')
 
@@ -483,15 +487,19 @@ def Deliver_Item(user_id: int, worker_id: int, item_id: int, num: int, storage_i
     if All_good:
         debug_DataBase.info("\tDelivery Entry Added.")
 
-        return True
+        # Update Stock:
+        if Update_Stock(item_id=item_id, storage_id=storage_id, units=num):
+            return True
+        else:
+            return False
     else:
         return False
 
-
+# TODO [Must Have]: List the 50 entries more recent // Read_Full_Table('entrega') ??
 
 
 if __name__ == '__main__':
-    '''CreateDB()
+    CreateDB()
 
     # Add test Users
     Add_User('Marco', '12345')
@@ -514,29 +522,32 @@ if __name__ == '__main__':
 
     # Restock Storage
     # adding Pens to main storage
-    First_Stockup(1, 1, 150, 50, 250)
-    First_Stockup(1, 2, 150, 50, 250)
+    First_Stock(1, 1, 150, 50, 250)
+    First_Stock(1, 2, 150, 50, 250)
     # adding Pens to Box 1
-    First_Stockup(2, 1, 20, 2, 20)
-    First_Stockup(2, 2, 20, 2, 20)
+    First_Stock(2, 1, 20, 2, 20)
+    First_Stock(2, 2, 20, 2, 20)
     # adding gloves to main storage
-    First_Stockup(1, 3, 100, 20, 200)
-    First_Stockup(1, 4, 100, 20, 200)
-    First_Stockup(1, 5, 100, 20, 200)
+    First_Stock(1, 3, 100, 20, 200)
+    First_Stock(1, 4, 100, 20, 200)
+    First_Stock(1, 5, 100, 20, 200)
     # adding gloves to Box 1
-    First_Stockup(2, 3, 20, 5, 20)
-    First_Stockup(2, 4, 20, 5, 20)
-    First_Stockup(2, 5, 20, 5, 20)
+    First_Stock(2, 3, 20, 5, 20)
+    First_Stock(2, 4, 20, 5, 20)
+    First_Stock(2, 5, 20, 5, 20)
 
 
     # Add Entries
-    #Deliver_Item(user_id=1, worker_id=1, item_id=1, storage_id=1, num=1)
-    #Deliver_Item(user_id=2, worker_id=2, item_id=3, storage_id=2, num=1)
-    #Deliver_Item(user_id=2, worker_id=2, item_id=2, storage_id=1, num=2)
+    # user_1 gives worker_1: 1x blue pen + 1x gloves s
+    Deliver_Item(user_id=1, worker_id=1, item_id=1, storage_id=1, num=-1)
+    Deliver_Item(user_id=2, worker_id=2, item_id=3, storage_id=2, num=-1)
+    # user_2 gives worker_2: 1x blue pen + 1x gloves m
+    Deliver_Item(user_id=2, worker_id=2, item_id=1, storage_id=2, num=-1)
+    Deliver_Item(user_id=2, worker_id=2, item_id=4, storage_id=2, num=-1)
 
     #
     #Query_Storage_Data(1, 1)
-    #Query_Storage_Data(2, 3)'''
+    #Query_Storage_Data(2, 3)
 
 
 
