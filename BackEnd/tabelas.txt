@@ -32,3 +32,10 @@ entrega
     item_id
     quantidade
     armario_id
+
+stock
+    item_id
+    armario_id
+    quantidade
+    quan_min
+    quan_max

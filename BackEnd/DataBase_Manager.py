@@ -90,11 +90,7 @@ def Read_Full_Table(table:str) -> list[tuple]:
         conn.close()
         return None
 
-def Query_Data():
-    ''''''
 
-    # Connect to databse:
-    conn, cursor = Connect_to_DB()
 
 
 
@@ -304,6 +300,57 @@ def Add_Storage(name:str, location:str):
     else:
         return False
 
+def Query_Storage_Data(item_id:int, storage_id:int) -> list[tuple]:
+    '''
+    Takes Item and Storage ID
+    Returns List[Tuple] -> []
+    '''
+
+    # Connect to databse:
+    conn, cursor = Connect_to_DB()
+
+    # Fetch data!
+    sql_code = f"SELECT * FROM stock WHERE item_id = (?) AND armario_id = (?)"
+    try:
+        cursor.execute(sql_code, (item_id, storage_id))
+        table_data = cursor.fetchall()
+
+        # Print and log data
+        debug_DataBase.info('---')
+        debug_DataBase.info(f"Quary item [{item_id}] storage [{storage_id}]: {table_data}")
+        for entry in table_data:
+            debug_DataBase.info(f'\t{entry}')
+            print('\t', entry)
+        # Close Connection
+        cursor.close()
+        conn.close()
+        return table_data
+    except Exception as err:
+        debug_DataBase.error(f'\tError: {err}')
+        # Close Connection
+        cursor.close()
+        conn.close()
+        return None
+
+
+
+def First_Stockup(storage_id:int, item_id:int, units:int, unit_min:int = 0, unit_max:int = 0):
+    debug_DataBase.info('---')
+    debug_DataBase.info("Adding 1st Stock")
+
+    if len(Query_Storage_Data(item_id=item_id, storage_id=storage_id)) > 0:
+        debug_DataBase.error('\tAlready exists')
+        return False
+
+    sql_code = '''INSERT INTO stock
+                (item_id, armario_id, quantidade, quan_min, quan_max) values (?, ?, ?, ?, ?)'''
+    All_good = Ex_SQL_Code_Add_Data(sql_code, (item_id, storage_id, units, unit_min, unit_max))
+    if All_good:
+        debug_DataBase.info(f'\tItem [{item_id}] - Storage [{storage_id}]')
+        return True
+    else:
+        return False
+
 
 # Items
 def Add_Item(item_name:  str, description: str) -> bool:
@@ -408,6 +455,10 @@ if __name__ == '__main__':
     Add_Worker('Marco', 12345)
     Add_Worker('Rita', 4596)
 
+    # Add test Storage
+    Add_Storage('Warehouse', 'Main Warehouse')
+    Add_Storage('Box 1', 'Work place 1')
+
     # Add test Items
     Add_Item('Blue Pen', 'Normal Blue Pen')
     Add_Item('Red Pen', 'Normal Red Pen')
@@ -415,15 +466,31 @@ if __name__ == '__main__':
     Add_Item('Gloves M', 'Gloves size M')
     Add_Item('Gloves L', 'Gloves size L')
 
-    # Add test Storage
-    Add_Storage('Warehouse', 'Main Warehouse')
-    Add_Storage('Box 1', 'Work place 1')
+    # Restock Storage
+    # adding Pens to main storage
+    First_Stockup(1, 1, 150, 50, 250)
+    First_Stockup(1, 2, 150, 50, 250)
+    # adding Pens to Box 1
+    First_Stockup(2, 1, 20, 2, 20)
+    First_Stockup(2, 2, 20, 2, 20)
+    # adding gloves to main storage
+    First_Stockup(1, 3, 100, 20, 200)
+    First_Stockup(1, 4, 100, 20, 200)
+    First_Stockup(1, 5, 100, 20, 200)
+    # adding gloves to Box 1
+    First_Stockup(2, 3, 20, 5, 20)
+    First_Stockup(2, 4, 20, 5, 20)
+    First_Stockup(2, 5, 20, 5, 20)
 
 
     # Add Entries
     #Deliver_Item(user_id=1, worker_id=1, item_id=1, storage_id=1, num=1)
     #Deliver_Item(user_id=2, worker_id=2, item_id=3, storage_id=2, num=1)
     #Deliver_Item(user_id=2, worker_id=2, item_id=2, storage_id=1, num=2)
+
+    #
+    #Query_Storage_Data(1, 1)
+    #Query_Storage_Data(2, 3)
 
 
 
@@ -433,6 +500,7 @@ if __name__ == '__main__':
     Read_Full_Table('armarios')
     Read_Full_Table('items')
     Read_Full_Table('entrega')
+    Read_Full_Table('stock')
 
     #get_time_date()
     #get_time_date_2()
