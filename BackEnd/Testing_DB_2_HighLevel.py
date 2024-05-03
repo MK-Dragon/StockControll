@@ -22,9 +22,19 @@ report = setup_logger('Test log 2', 'logs/test_report_2.log')
 report.info('---//---')
 
 class Test_DataBase_2(unittest.TestCase):
+    def test_READ_ALL_TABLES(self):
+        DataBase_Manager.Read_Full_Table('utilizadores')
+        DataBase_Manager.Read_Full_Table('colaboradores')
+        DataBase_Manager.Read_Full_Table('armarios')
+        DataBase_Manager.Read_Full_Table('items')
+        DataBase_Manager.Read_Full_Table('entrega')
+        DataBase_Manager.Read_Full_Table('stock')
+        self.assertEqual(True, True)
+
+
     def test_A_get_stock(self):
         report.info(f'\t---')
-        report.info(f'Query Stock:')
+        report.info(f'Get Stock:')
         item = 1
         storage = 1
         report.info(f'\tItem [{item}] Storage [{storage}]:')
@@ -49,8 +59,84 @@ class Test_DataBase_2(unittest.TestCase):
         self.assertEqual(len(c) > 1, True)
 
     def test_A_deliver_item_to_worker(self):
+        report.info(f'\t---')
+        report.info(f'Deliver Item to Worker:')
+
         a = DataBase_Manager.Deliver_Item(item_id=1, storage_id=2, num=-1, worker_id=1, user_id=1)
         self.assertEqual(a, True)
+        #TODO: add more testes...
+
+    def test_Aa_reStock_from_store(self):
+        report.info(f'\t---')
+        report.info(f'ReStock Store -> Storage:')
+
+        # test Restock from STORE aka: source = None
+        rs_storage = 2
+        item = 1
+        units = 3
+        # get initial values
+        ini_stock = DataBase_Manager.Get_Stock_Data(item_id=item, storage_id=rs_storage)
+        ini_stock = ini_stock[0][2]
+        # test:
+        a = DataBase_Manager.ReStock(storage_restocked_id=rs_storage, item_id=item, units=units)
+        report.info(f'\tFrom Store -> Storage [{rs_storage}] -> item[{item}] (+{units})')
+        # get final values
+        final_stock = DataBase_Manager.Get_Stock_Data(item_id=item, storage_id=rs_storage)
+        final_stock = final_stock[0][2]
+        # Log:
+        if ini_stock + units == final_stock:
+            report.info(f'\tini [{ini_stock}] + [{units}] == final [{final_stock}]')
+        else:
+            report.error(f'\tini [{ini_stock}] + [{units}] != final [{final_stock}]')
+
+        self.assertEqual(a, True)
+        self.assertEqual(ini_stock + units, final_stock)
+
+    def test_Ab_reStock_transfer(self):
+        report.info(f'\t---')
+        report.info(f'ReStock S1 -> S2:')
+
+        # test Restock from STORE aka: source = None
+        rs_storage = 2
+        souce_storage = 1
+        item = 3
+        units = 10
+        # get initial values
+        ini_stock_rs = DataBase_Manager.Get_Stock_Data(item_id=item, storage_id=rs_storage)
+        ini_stock_rs = ini_stock_rs[0][2]
+        ini_stock_source = DataBase_Manager.Get_Stock_Data(item_id=item, storage_id=souce_storage)
+        ini_stock_source = ini_stock_source[0][2]
+
+        # test:
+        a = DataBase_Manager.ReStock(storage_source_id=souce_storage, storage_restocked_id=rs_storage, item_id=item, units=units)
+        report.info(f'\tFrom Storage [{souce_storage}] -> Storage [{rs_storage}] -> item[{item}] ({units})')
+
+        # get final values
+        final_stock_rs = DataBase_Manager.Get_Stock_Data(item_id=item, storage_id=rs_storage)
+        final_stock_rs = final_stock_rs[0][2]
+        final_stock_source = DataBase_Manager.Get_Stock_Data(item_id=item, storage_id=souce_storage)
+        final_stock_source = final_stock_source[0][2]
+
+        # Log:
+        if ini_stock_rs + units == final_stock_rs:
+            report.info(f'\tini [{ini_stock_rs}] + [{units}] == final [{final_stock_rs}]')
+        else:
+            report.error(f'\tini [{ini_stock_rs}] + [{units}] != final [{final_stock_rs}]')
+
+        if ini_stock_source - units == final_stock_source:
+            report.info(f'\tini [{ini_stock_source}] - [{units}] == final [{final_stock_source}]')
+        else:
+            report.error(f'\tini [{ini_stock_source}] - [{units}] != final [{final_stock_source}]')
+
+        self.assertEqual(a, True)
+        self.assertEqual(ini_stock_rs + units, final_stock_rs)
+        self.assertEqual(ini_stock_source - units, final_stock_source)
+
+    def test_Ac_reStock_erro(self):
+        # test error... out of bounds and all...
+        #TODO test ReStock Erros!
+        pass
+
 
 
 if __name__ == '__main__':

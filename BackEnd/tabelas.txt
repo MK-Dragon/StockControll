@@ -39,3 +39,12 @@ stock
     quantidade
     quan_min
     quan_max
+
+# TODO: add restock to DB
+restock
+    id
+    data
+    origem_id
+    armario_abastecido_id
+    item_id
+    quantidade

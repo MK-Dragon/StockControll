@@ -77,9 +77,9 @@ def Query_SQL_Code(query_code:str, values:tuple = None) -> list[tuple]:
             cursor.execute(query_code, values)
         table_data = cursor.fetchall()
         # Log results:
-        debug_DataBase.info(f"\tQuery Result:")
+        debug_DataBase.info(f"\t\tQuery Result:")
         for entry in table_data:
-            debug_DataBase.info(f'\t\t{entry}')
+            debug_DataBase.info(f'\t\t\t{entry}')
         # Close Connection
         cursor.close()
         conn.close()
@@ -347,6 +347,8 @@ def Add_Storage(name:str, location:str):
 def Update_Stock(item_id:int, storage_id:int, units:int) -> bool:
     '''
     Don't forget to do a <storage_entry_exists> before the update!
+
+    :units: ** how many units to Add or Remove!
     :return: False if it fails
     '''
     debug_DataBase.info('---')
@@ -366,7 +368,7 @@ def Update_Stock(item_id:int, storage_id:int, units:int) -> bool:
                 WHERE item_id = (?) AND armario_id =(?)'''
     All_good = Ex_SQL_Code(sql_code, (new_unit_val, item_id, storage_id))
     if All_good:
-        debug_DataBase.info(f'\tItem: {item_id} - Storage {storage_id} -> {stock[0][2]} + {units} = {new_unit_val}')
+        debug_DataBase.info(f'\tItem[{item_id}] - Storage[{storage_id}] -> {stock[0][2]} + {units} = {new_unit_val}')
         return True
     else:
         return False
@@ -380,9 +382,11 @@ def Get_Stock_Data(item_id:int = None, storage_id:int = None) -> list[tuple]:
     Only item -> item in ALL storages
     Only storage -> all items in storage
     item + Storage -> item in specified storage :)
+
+    :returns Data / False if it fails upstream! ^_^
     '''
 
-    debug_DataBase.info(f"\tQuery item [{item_id}] storage [{storage_id}]:")
+    debug_DataBase.info(f"\tGet Stock Data: item[{item_id}] storage[{storage_id}]")
     values:tuple = ()
     if storage_id == None: # Only item -> item in ALL storages
         sql_code = f"SELECT * FROM stock WHERE item_id = (?)"
@@ -426,6 +430,43 @@ def First_Stock(storage_id:int, item_id:int, units:int, unit_min:int = 0, unit_m
         return False
 
 # TODO [Must Have]: Add ReStock: transfer x units: storage_a -> storage_b // store -> storage_b
+def ReStock(item_id:int, units:int, storage_restocked_id:int, storage_source_id:int = None) -> bool:
+    '''
+    if storage_source_id == None -> items came from Store or something!^_^
+
+    :param item_id:
+    :param units:
+    :param storage_restocked_id: Where items go
+    :param storage_source_id: Where items were taken from
+    :return: True / False if it fails
+    '''
+
+    debug_DataBase.info('---')
+    debug_DataBase.info(f"ReStocking S[{storage_source_id}] -> s[{storage_restocked_id}]")
+
+    # get stock source
+    stock_source = None
+    if storage_source_id is not None:
+        stock_source = Get_Stock_Data(item_id=item_id, storage_id=storage_source_id)
+        if stock_source == False:
+            return False
+    # get stock restock
+    stock_restock = Get_Stock_Data(item_id=item_id, storage_id=storage_restocked_id)
+    if stock_restock == False:
+        return False
+
+    # update source stocks:
+    all_good_s = True
+    if storage_source_id is not None:
+        all_good_s = Update_Stock(item_id=item_id, storage_id=storage_source_id, units=-units)
+    # Update restocked stock:
+    all_good_rs = Update_Stock(item_id=item_id, storage_id=storage_restocked_id, units=units)
+
+    # TODO: Add ReStock Entry
+    # Create Entry
+    if all_good_s and all_good_rs:
+        return True
+
 
 
 # Items
@@ -496,6 +537,7 @@ def Deliver_Item(user_id: int, worker_id: int, item_id: int, num: int, storage_i
         return False
 
 # TODO [Must Have]: List the 50 entries more recent // Read_Full_Table('entrega') ??
+
 
 
 if __name__ == '__main__':
