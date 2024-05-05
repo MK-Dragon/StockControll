@@ -66,6 +66,7 @@ class Test_DataBase_2(unittest.TestCase):
         self.assertEqual(a, True)
         #TODO: add more testes...
 
+    # ReStock Testing
     def test_Aa_reStock_from_store(self):
         report.info(f'\t---')
         report.info(f'ReStock Store -> Storage:')
@@ -136,6 +137,52 @@ class Test_DataBase_2(unittest.TestCase):
         # test error... out of bounds and all...
         #TODO test ReStock Erros!
         pass
+
+    # Complex Table Reads
+    def test_A_Complex_Read_get_defaults(self):
+        report.info(f'\t---')
+        report.info(f'Complex_Read: get_defaults:')
+
+        # test a:
+
+        number_of_results_a = 2
+        data = DataBase_Manager.Complex_Read_Table(
+            table='entrega',
+            num_results=number_of_results_a,
+        )
+
+        a_len = len(data)
+        if a_len <= number_of_results_a:
+            report.info(f'{a_len} <= {number_of_results_a} = {a_len <= number_of_results_a}')
+        else:
+            report.error(f'{a_len} <= {number_of_results_a} = {a_len <= number_of_results_a}')
+
+        for i in data:
+            report.info(f'\t{i}')
+
+        # Test b:
+
+        report.info(f'num_results = Zero for retrieve ALL data:')
+
+        data = DataBase_Manager.Complex_Read_Table(
+            table='entrega',
+            num_results=0,
+        )
+
+        b_len = len(data)
+        if b_len >= number_of_results_a:
+            report.info(f'{b_len} >= {a_len} = {b_len >= a_len}')
+        else:
+            report.error(f'{b_len} >= {a_len} = {b_len >= a_len}')
+
+        for i in data:
+            report.info(f'\t{i}')
+
+
+        self.assertEqual(a_len <= number_of_results_a, True)
+        self.assertEqual(b_len >= a_len, True)
+
+
 
 
 

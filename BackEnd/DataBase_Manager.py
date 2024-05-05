@@ -537,7 +537,53 @@ def Deliver_Item(user_id: int, worker_id: int, item_id: int, num: int, storage_i
         return False
 
 # TODO [Must Have]: List the 50 entries more recent // Read_Full_Table('entrega') ??
+def Complex_Read_Table(table:str, num_results:int = 50, order_by:str = 'id', order_desc:bool = True) -> list[tuple]:
+    '''
+    Complex Table Read:
+    
+    :param table: 
+    :param num_results: if num < 1: returns all entries!
+    :param order_by: 
+    :param order_desc: 
+    :return: 
+    '''
 
+    debug_DataBase.info('---')
+    debug_DataBase.info(f"Complex_Read: [{table = }][{num_results = }][{order_by = }][{order_desc = }]")
+
+    # Connect to databse:
+    conn, cursor = Connect_to_DB()
+
+    asc_desc = 'DESC' if order_desc else 'ASC'
+    sql_code = None
+
+    # Fetch data!
+    if num_results < 1:
+        sql_code = f"SELECT * FROM {table} ORDER BY {order_by} {asc_desc}"
+    else:
+        sql_code = f"SELECT * FROM {table} ORDER BY {order_by} {asc_desc} LIMIT {num_results}"
+
+    debug_DataBase.info(f'{sql_code = }')
+
+    try:
+        cursor.execute(sql_code)
+        table_data = cursor.fetchall()
+
+        # Print and log data
+        print(f"\nComplex_Read: [{table = }][{num_results = }][{order_by = }][{order_desc = }]:")
+        for entry in table_data:
+            debug_DataBase.info(f'\t{entry}')
+            print('\t', entry)
+        # Close Connection
+        cursor.close()
+        conn.close()
+        return table_data
+    except Exception as err:
+        debug_DataBase.error(f'\tError: {err}')
+        # Close Connection
+        cursor.close()
+        conn.close()
+        return None
 
 
 if __name__ == '__main__':
