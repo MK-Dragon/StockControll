@@ -1,0 +1,21 @@
+Functions to be used by Front End:
+
+To get Data:
+    Read_Full_Table(table:str) -> list[tuple]
+    Get_Stock_Data(item_id:int = None, storage_id:int = None) -> list[tuple]
+
+User Login and Account:
+    Validate_Login(user: str, password: str) -> bool:
+
+Adding Data:
+    Add_User(username: str, password: str) -> bool
+    Add_Worker(name: str, number: int = None) -> bool:
+    Add_Storage(name:str, location:str):
+    Add_First_Stock_Entry(storage_id:int, item_id:int, units:int=0, unit_min:int = 0, unit_max:int = 0) -> bool
+    ReStock(user:int, item_id:int, units:int, storage_restocked_id:int, storage_source_id:int = None) -> bool
+    Add_Item(item_name:  str, description: str) -> bool
+
+    Deliver_Item(user_id: int, worker_id: int, item_id: int, num: int, storage_id: int) -> bool
+    Complex_Read_Table(table:str, num_results:int = 50, order_by:str = 'id', order_desc:bool = True) -> list[tuple]
+
+

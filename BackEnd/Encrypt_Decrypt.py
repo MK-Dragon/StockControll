@@ -3,7 +3,7 @@ from Crypto.Cipher import AES  # Importação do módulo AES da biblioteca pycry
 from Crypto.Util.Padding import pad, unpad  # Importação de funções de preenchimento da biblioteca pycryptodome
 import base64  # Importação da biblioteca base64 para codificação e decodificação
 
-
+# TODO: Clean this up ^_^
 def encriptar_dados(frase: str, chave =b'chave_16_bytes12') -> tuple:
     """
     Função para encriptar uma frase usando AES (Advanced Encryption Standard) em modo CBC (Cipher Block Chaining).

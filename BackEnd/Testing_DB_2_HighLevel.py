@@ -72,6 +72,7 @@ class Test_DataBase_2(unittest.TestCase):
         report.info(f'ReStock Store -> Storage:')
 
         # test Restock from STORE aka: source = None
+        user = 1
         rs_storage = 2
         item = 1
         units = 3
@@ -79,7 +80,7 @@ class Test_DataBase_2(unittest.TestCase):
         ini_stock = DataBase_Manager.Get_Stock_Data(item_id=item, storage_id=rs_storage)
         ini_stock = ini_stock[0][2]
         # test:
-        a = DataBase_Manager.ReStock(storage_restocked_id=rs_storage, item_id=item, units=units)
+        a = DataBase_Manager.ReStock(storage_restocked_id=rs_storage, item_id=item, units=units, user=user)
         report.info(f'\tFrom Store -> Storage [{rs_storage}] -> item[{item}] (+{units})')
         # get final values
         final_stock = DataBase_Manager.Get_Stock_Data(item_id=item, storage_id=rs_storage)
@@ -97,7 +98,8 @@ class Test_DataBase_2(unittest.TestCase):
         report.info(f'\t---')
         report.info(f'ReStock S1 -> S2:')
 
-        # test Restock from STORE aka: source = None
+        # test Restock from Storage
+        user = 2
         rs_storage = 2
         souce_storage = 1
         item = 3
@@ -109,7 +111,7 @@ class Test_DataBase_2(unittest.TestCase):
         ini_stock_source = ini_stock_source[0][2]
 
         # test:
-        a = DataBase_Manager.ReStock(storage_source_id=souce_storage, storage_restocked_id=rs_storage, item_id=item, units=units)
+        a = DataBase_Manager.ReStock(storage_source_id=souce_storage, storage_restocked_id=rs_storage, item_id=item, units=units, user=user)
         report.info(f'\tFrom Storage [{souce_storage}] -> Storage [{rs_storage}] -> item[{item}] ({units})')
 
         # get final values

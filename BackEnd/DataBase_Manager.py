@@ -3,6 +3,7 @@ import sqlite3
 import Encrypt_Decrypt
 # Extras
 import logging
+from tabulate import tabulate
 
 # globals
 DB_FILE = 'DataBase/database.db'
@@ -93,6 +94,8 @@ def Query_SQL_Code(query_code:str, values:tuple = None) -> list[tuple]:
         return False
 
 
+
+# Reading DataBase:
 def Read_Full_Table(table:str) -> list[tuple]:
     '''
     ** Deprecated ** -> user -> Query_SQL_Code
@@ -128,6 +131,53 @@ def Read_Full_Table(table:str) -> list[tuple]:
         conn.close()
         return None
 
+def Complex_Read_Table(table: str, num_results: int = 50, order_by: str = 'id', order_desc: bool = True) -> list[tuple]:
+    '''
+    Complex Table Read:
+
+    :param table:
+    :param num_results: if num < 1: returns all entries!
+    :param order_by:
+    :param order_desc:
+    :return:
+    '''
+
+    debug_DataBase.info('---')
+    debug_DataBase.info(f"Complex_Read: [{table = }][{num_results = }][{order_by = }][{order_desc = }]")
+
+    # Connect to databse:
+    conn, cursor = Connect_to_DB()
+
+    asc_desc = 'DESC' if order_desc else 'ASC'
+    sql_code = None
+
+    # Fetch data!
+    if num_results < 1:
+        sql_code = f"SELECT * FROM {table} ORDER BY {order_by} {asc_desc}"
+    else:
+        sql_code = f"SELECT * FROM {table} ORDER BY {order_by} {asc_desc} LIMIT {num_results}"
+
+    debug_DataBase.info(f'{sql_code = }')
+
+    try:
+        cursor.execute(sql_code)
+        table_data = cursor.fetchall()
+
+        # Print and log data
+        print(f"\nComplex_Read: [{table = }][{num_results = }][{order_by = }][{order_desc = }]:")
+        for entry in table_data:
+            debug_DataBase.info(f'\t{entry}')
+            print('\t', entry)
+        # Close Connection
+        cursor.close()
+        conn.close()
+        return table_data
+    except Exception as err:
+        debug_DataBase.error(f'\tError: {err}')
+        # Close Connection
+        cursor.close()
+        conn.close()
+        return None
 
 
 
@@ -194,6 +244,20 @@ def CreateDB():
             FOREIGN KEY (item_id) REFERENCES items(id),
             FOREIGN KEY (armario_id) REFERENCES armarios(id))''')
 
+    # ReStock Entry
+    sql_code.append('''CREATE TABLE restock
+               (id INTEGER PRIMARY KEY,
+               user_id INTEGER NOT NULL,
+               data REAL,
+               origem_id INTEGER,
+               armario_abastecido_id INTEGER NOT NULL,
+               item_id INTEGER NOT NULL,
+               quantidade INTEGER NOT NULL,
+               FOREIGN KEY (user_id) REFERENCES utilizadores(id),
+               FOREIGN KEY (origem_id) REFERENCES armarios(id),
+               FOREIGN KEY (armario_abastecido_id) REFERENCES armarios(id),
+               FOREIGN KEY (item_id) REFERENCES items(id))''')
+
     ok_counter = 0
     total_tried = 0
     for code in sql_code:
@@ -211,6 +275,25 @@ def CreateDB():
     cursor.close()
     conn.close()
     return ok_counter, total_tried
+
+# Export DataBase
+def ExportDB():
+    # TODO: Don't forget to Export a Monthly Report!
+    data = [
+        ('utilizadores', ['id', 'utilizador', 'senha', 'iv', 'activo']),
+        ('colaboradores', ['id', 'num_colaborador', 'nome', 'activo']),
+        ('armarios', ['id', 'nome', 'local', 'activo']),
+        ('items', ['id', 'item', 'descricao', 'activo']),
+        ('entrega', ['id', 'data', 'user_id', 'colaborador_id', 'item_id', 'quantidade', 'armario_id']),
+        ('stock', ['item_id', 'armario_id', 'quantidade', 'quan_min', 'quan_max']),
+        ('restock', ['id', 'user_id', 'data', 'origem_id', 'armario_abastecido_id', 'item_id', 'quantidade'])
+    ]
+
+    with open(f"Stock.txt", "w", encoding="utf-8") as f:
+        for d in data:
+            f.write(f"{d[0]}:\n")
+            f.write(tabulate(Read_Full_Table(d[0]), headers=d[1], tablefmt="grid"))
+            f.write('\n\n')
 
 
 
@@ -319,10 +402,12 @@ def Add_Worker(name: str, number: int = None) -> bool:
 # Storage Functions:
 def Add_Storage(name:str, location:str):
     '''
-        :param name:
-        :param location:
-        :return: True or False and logs why it failed
-        '''
+    Add Storage to DataBase
+
+    :param name:
+    :param location:
+    :return: True or False and logs why it failed
+    '''
 
     debug_DataBase.info('---')
     debug_DataBase.info("Inserting Item into DataBase")
@@ -344,31 +429,28 @@ def Add_Storage(name:str, location:str):
     else:
         return False
 
-def Update_Stock(item_id:int, storage_id:int, units:int) -> bool:
+def Add_First_Stock_Entry(storage_id:int, item_id:int, units:int=0, unit_min:int = 0, unit_max:int = 0) -> bool:
     '''
-    Don't forget to do a <storage_entry_exists> before the update!
+    Adds the Stock Entry to the DataBase! Don't foget to make the Retock Entry too!
 
-    :units: ** how many units to Add or Remove!
-    :return: False if it fails
+    :param storage_id:
+    :param item_id:
+    :param units:
+    :param unit_min:
+    :param unit_max:
+    :return:
     '''
     debug_DataBase.info('---')
-    debug_DataBase.info("Update Stock")
+    debug_DataBase.info("Adding 1st Stock")
 
-    # SAFE GUARD - if it doesn't exist ask user to create one!
-    if not stock_entry_exists(item_id=item_id, storage_id=storage_id):
-        debug_DataBase.error("\t** Ask User to Create Initial Stock ** - Safe Guard!!!")
+    if stock_entry_exists(storage_id=storage_id, item_id=item_id):
         return False
 
-    stock = Get_Stock_Data(item_id=item_id, storage_id=storage_id)
-    print(f'Stock {stock[0][2]}')
-    new_unit_val = stock[0][2] + units
-
-    # Update Stock
-    sql_code = '''UPDATE stock SET (quantidade) = (?)
-                WHERE item_id = (?) AND armario_id =(?)'''
-    All_good = Ex_SQL_Code(sql_code, (new_unit_val, item_id, storage_id))
+    sql_code = '''INSERT INTO stock
+                (item_id, armario_id, quantidade, quan_min, quan_max) values (?, ?, ?, ?, ?)'''
+    All_good = Ex_SQL_Code(sql_code, (item_id, storage_id, units, unit_min, unit_max))
     if All_good:
-        debug_DataBase.info(f'\tItem[{item_id}] - Storage[{storage_id}] -> {stock[0][2]} + {units} = {new_unit_val}')
+        debug_DataBase.info(f'\tItem [{item_id}] - Storage [{storage_id}] Added')
         return True
     else:
         return False
@@ -401,39 +483,11 @@ def Get_Stock_Data(item_id:int = None, storage_id:int = None) -> list[tuple]:
     data = Query_SQL_Code(sql_code, values)
     return data
 
-def stock_entry_exists(item_id:int, storage_id:int) -> bool:
-    '''
-    if storage_entry_exists returns True
-    else returns False
-    '''
-    if len(Get_Stock_Data(item_id=item_id, storage_id=storage_id)) > 0:
-        debug_DataBase.info(f'\tItem [{item_id}] - Storage [{storage_id}] Exists!')
-        return True
-    else:
-        debug_DataBase.info(f'\tItem [{item_id}] - Storage [{storage_id}] Does NOT Exists!')
-        return False
-
-def First_Stock(storage_id:int, item_id:int, units:int, unit_min:int = 0, unit_max:int = 0):
-    debug_DataBase.info('---')
-    debug_DataBase.info("Adding 1st Stock")
-
-    if stock_entry_exists(storage_id=storage_id, item_id=item_id):
-        return False
-
-    sql_code = '''INSERT INTO stock
-                (item_id, armario_id, quantidade, quan_min, quan_max) values (?, ?, ?, ?, ?)'''
-    All_good = Ex_SQL_Code(sql_code, (item_id, storage_id, units, unit_min, unit_max))
-    if All_good:
-        debug_DataBase.info(f'\tItem [{item_id}] - Storage [{storage_id}] Added')
-        return True
-    else:
-        return False
-
-# TODO [Must Have]: Add ReStock: transfer x units: storage_a -> storage_b // store -> storage_b
-def ReStock(item_id:int, units:int, storage_restocked_id:int, storage_source_id:int = None) -> bool:
+def ReStock(user:int, item_id:int, units:int, storage_restocked_id:int, storage_source_id:int = None) -> bool:
     '''
     if storage_source_id == None -> items came from Store or something!^_^
 
+    :param user: user who did it!
     :param item_id:
     :param units:
     :param storage_restocked_id: Where items go
@@ -456,22 +510,92 @@ def ReStock(item_id:int, units:int, storage_restocked_id:int, storage_source_id:
         return False
 
     # update source stocks:
-    all_good_s = True
+    all_good_update_SourceStock = True
     if storage_source_id is not None:
-        all_good_s = Update_Stock(item_id=item_id, storage_id=storage_source_id, units=-units)
+        all_good_update_SourceStock = Update_Stock(item_id=item_id, storage_id=storage_source_id, units=-units)
     # Update restocked stock:
-    all_good_rs = Update_Stock(item_id=item_id, storage_id=storage_restocked_id, units=units)
+    all_good_update_ReStocked = Update_Stock(item_id=item_id, storage_id=storage_restocked_id, units=units)
 
-    # TODO: Add ReStock Entry
     # Create Entry
-    if all_good_s and all_good_rs:
-        return True
+    all_good_entry = make_entry_restock(user=user, item_id=item_id, units=units, storage_restocked_id=storage_restocked_id, storage_source_id=storage_source_id)
+    if all_good_entry:
+        debug_DataBase.info(f'\tUser: {user}: [{storage_source_id}] -> [{storage_restocked_id}] {units}x item[{item_id}]')
 
+    if all_good_update_SourceStock and all_good_update_ReStocked and all_good_entry:
+        return True
+    else:
+        debug_DataBase.error(f'\t{all_good_update_SourceStock = } - {all_good_update_ReStocked = } - {all_good_entry = }')
+        return False
+
+# helper functions:
+def Update_Stock(item_id:int, storage_id:int, units:int) -> bool:
+    '''
+    Don't forget to do a <storage_entry_exists> before the update!
+
+    :units: ** how many units to Add or Remove!
+    :return: False if it fails
+    '''
+    debug_DataBase.info('---')
+    debug_DataBase.info("Update Stock")
+
+    # SAFE GUARD - if it doesn't exist ask user to create one!
+    if not stock_entry_exists(item_id=item_id, storage_id=storage_id):
+        debug_DataBase.error("\t** Ask User to Create Initial Stock ** - Safe Guard!!!")
+        return False
+
+    stock = Get_Stock_Data(item_id=item_id, storage_id=storage_id)
+    print(f'Stock {stock[0][2]}')
+    new_unit_val = stock[0][2] + units
+
+    # Update Stock
+    sql_code = '''UPDATE stock SET (quantidade) = (?)
+                WHERE item_id = (?) AND armario_id =(?)'''
+    All_good = Ex_SQL_Code(sql_code, (new_unit_val, item_id, storage_id))
+    if All_good:
+        debug_DataBase.info(f'\tItem[{item_id}] - Storage[{storage_id}] -> {stock[0][2]} + {units} = {new_unit_val}')
+        return True
+    else:
+        return False
+
+def stock_entry_exists(item_id:int, storage_id:int) -> bool:
+    '''
+    if storage_entry_exists returns True
+    else returns False
+    '''
+    if len(Get_Stock_Data(item_id=item_id, storage_id=storage_id)) > 0:
+        debug_DataBase.info(f'\tItem [{item_id}] - Storage [{storage_id}] Exists!')
+        return True
+    else:
+        debug_DataBase.info(f'\tItem [{item_id}] - Storage [{storage_id}] Does NOT Exists!')
+        return False
+
+def make_entry_restock(user:int, item_id:int, units:int, storage_restocked_id:int, storage_source_id:int = None) -> bool:
+    '''
+    Just adds the entry to the DataBase
+
+    :param user:
+    :param item_id:
+    :param units:
+    :param storage_restocked_id:
+    :param storage_source_id:
+    :return:
+    '''
+    sql_code = '''INSERT INTO restock
+            (user_id, data, origem_id, armario_abastecido_id, item_id, quantidade) values (?, datetime('now', 'localtime'), ?, ?, ?, ?)'''
+    all_good_entry = Ex_SQL_Code(sql_code, (user, storage_source_id, storage_restocked_id, item_id, units))
+    if all_good_entry:
+        debug_DataBase.info(
+            f'\tUser: {user}: [{storage_source_id}] -> [{storage_restocked_id}] {units}x item[{item_id}]')
+        return True
+    else:
+        return False
 
 
 # Items
 def Add_Item(item_name:  str, description: str) -> bool:
     '''
+    Adds Item to DataBase
+
     :param item_name:
     :param description:
     :return: True or False and logs why it failed
@@ -499,7 +623,7 @@ def Add_Item(item_name:  str, description: str) -> bool:
 # TODO [nice to have]: Add Edit Item
 
 
-# Entries
+# Deliver Item
 def Deliver_Item(user_id: int, worker_id: int, item_id: int, num: int, storage_id: int) -> bool:
     '''
 
@@ -517,7 +641,7 @@ def Deliver_Item(user_id: int, worker_id: int, item_id: int, num: int, storage_i
 
     # if storage entry doesn't exist -> make place holder
     if not stock_entry_exists(item_id=item_id, storage_id=storage_id):
-        First_Stock(item_id=item_id, storage_id=storage_id, units=0)
+        Add_First_Stock_Entry(item_id=item_id, storage_id=storage_id, units=0)
         debug_DataBase.error('\tPlace Holder Entry Added')
 
     # Create delivery entry
@@ -536,54 +660,8 @@ def Deliver_Item(user_id: int, worker_id: int, item_id: int, num: int, storage_i
     else:
         return False
 
-# TODO [Must Have]: List the 50 entries more recent // Read_Full_Table('entrega') ??
-def Complex_Read_Table(table:str, num_results:int = 50, order_by:str = 'id', order_desc:bool = True) -> list[tuple]:
-    '''
-    Complex Table Read:
-    
-    :param table: 
-    :param num_results: if num < 1: returns all entries!
-    :param order_by: 
-    :param order_desc: 
-    :return: 
-    '''
 
-    debug_DataBase.info('---')
-    debug_DataBase.info(f"Complex_Read: [{table = }][{num_results = }][{order_by = }][{order_desc = }]")
 
-    # Connect to databse:
-    conn, cursor = Connect_to_DB()
-
-    asc_desc = 'DESC' if order_desc else 'ASC'
-    sql_code = None
-
-    # Fetch data!
-    if num_results < 1:
-        sql_code = f"SELECT * FROM {table} ORDER BY {order_by} {asc_desc}"
-    else:
-        sql_code = f"SELECT * FROM {table} ORDER BY {order_by} {asc_desc} LIMIT {num_results}"
-
-    debug_DataBase.info(f'{sql_code = }')
-
-    try:
-        cursor.execute(sql_code)
-        table_data = cursor.fetchall()
-
-        # Print and log data
-        print(f"\nComplex_Read: [{table = }][{num_results = }][{order_by = }][{order_desc = }]:")
-        for entry in table_data:
-            debug_DataBase.info(f'\t{entry}')
-            print('\t', entry)
-        # Close Connection
-        cursor.close()
-        conn.close()
-        return table_data
-    except Exception as err:
-        debug_DataBase.error(f'\tError: {err}')
-        # Close Connection
-        cursor.close()
-        conn.close()
-        return None
 
 
 if __name__ == '__main__':
@@ -610,19 +688,19 @@ if __name__ == '__main__':
 
     # Restock Storage
     # adding Pens to main storage
-    First_Stock(1, 1, 150, 50, 250)
-    First_Stock(1, 2, 150, 50, 250)
+    Add_First_Stock_Entry(1, 1, 150, 50, 250)
+    Add_First_Stock_Entry(1, 2, 150, 50, 250)
     # adding Pens to Box 1
-    First_Stock(2, 1, 20, 2, 20)
-    First_Stock(2, 2, 20, 2, 20)
+    Add_First_Stock_Entry(2, 1, 20, 2, 20)
+    Add_First_Stock_Entry(2, 2, 20, 2, 20)
     # adding gloves to main storage
-    First_Stock(1, 3, 100, 20, 200)
-    First_Stock(1, 4, 100, 20, 200)
-    First_Stock(1, 5, 100, 20, 200)
+    Add_First_Stock_Entry(1, 3, 100, 20, 200)
+    Add_First_Stock_Entry(1, 4, 100, 20, 200)
+    Add_First_Stock_Entry(1, 5, 100, 20, 200)
     # adding gloves to Box 1
-    First_Stock(2, 3, 20, 5, 20)
-    First_Stock(2, 4, 20, 5, 20)
-    First_Stock(2, 5, 20, 5, 20)
+    Add_First_Stock_Entry(2, 3, 20, 5, 20)
+    Add_First_Stock_Entry(2, 4, 20, 5, 20)
+    Add_First_Stock_Entry(2, 5, 20, 5, 20)
 
 
     # Add Entries

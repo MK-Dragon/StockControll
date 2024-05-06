@@ -199,8 +199,8 @@ class Test_DataBase(unittest.TestCase):
         DataBase_Manager.Update_Stock(item_id=1, storage_id=2, units=-1)
 
     def test_C_first_stockup(self):
-        DataBase_Manager.First_Stock(1, 1, 150, 50, 250)
-        a = DataBase_Manager.First_Stock(1, 1, 150, 50, 250)
+        DataBase_Manager.Add_First_Stock_Entry(1, 1, 150, 50, 250)
+        a = DataBase_Manager.Add_First_Stock_Entry(1, 1, 150, 50, 250)
 
         message = f'First Stock up [{a}] (expected False)'
         if a == False:
@@ -210,6 +210,9 @@ class Test_DataBase(unittest.TestCase):
 
         self.assertEqual(a, False)
 
+
+    def test_export_DataBase(self):
+        DataBase_Manager.ExportDB()
 
 
 
