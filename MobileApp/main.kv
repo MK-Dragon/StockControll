@@ -2,4 +2,22 @@
 
 
 <MainScreen>
+    container: container
 
+    BoxLayout:
+	    cols: 1
+	    orientation: 'vertical'
+        size: root.width, root.height
+        padding: 2
+
+        MDScrollView:
+            MDList:
+                id: container
+
+        MDFloatingActionButton:
+            icon: "duck"
+            md_bg_color: app.theme_cls.primary_color
+            on_release:
+	            root.button()
+            pos_hint: {"center_x": .9, "center_y": .1}
+            elevation: 1
