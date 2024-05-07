@@ -7,6 +7,8 @@ from kivy.core.window import Window # Remove before py --> apk
 # Base KivyMD Imports:
 from kivymd.app import MDApp
 from kivymd.uix.list import TwoLineAvatarIconListItem
+from kivymd.uix.boxlayout import MDBoxLayout
+from kivymd.uix.list import IRightBodyTouch
 from kivy.uix.popup import Popup
 
 import requests
@@ -68,8 +70,33 @@ class MainScreen(Screen):
         for i in response.json():
             print(f'\t{i}')
 
+    def button_go_to_add_entry(self):
+        main_app.screen_manager.transition.direction = 'left'
+        main_app.screen_manager.current = 'Deliver Item'
+
+
+class DeliverItem(Screen):
+    storage_picked = ObjectProperty(None)
+    item_picked = ObjectProperty(None)
+    num_items  =ObjectProperty(None)
+
+
+
+    def button_cancel(self):
+        main_app.screen_manager.transition.direction = 'right'
+        main_app.screen_manager.current = 'Main Screen'
 
 #TODO: Note: for the 'search' list[tuples] -> list[dict] like {'blue pen': 1} Use dict.keys -> list[keys] and use 'FuzzyWuzzy' ^_^
+
+
+
+# Custom wedgets:
+class YourContainer(IRightBodyTouch, MDBoxLayout):
+    # use for TwoLineAvatarIconListItem: with 2 left items
+    adaptive_width = True
+
+
+
 
 class Main(MDApp):
     def __init__(self, **kwargs):
@@ -89,6 +116,11 @@ class Main(MDApp):
 
         self.main_screen = MainScreen()
         screen = Screen(name='Main Screen')
+        screen.add_widget(self.main_screen)
+        self.screen_manager.add_widget(screen)
+
+        self.main_screen = DeliverItem()
+        screen = Screen(name='Deliver Item')
         screen.add_widget(self.main_screen)
         self.screen_manager.add_widget(screen)
 

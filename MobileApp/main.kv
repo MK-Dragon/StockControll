@@ -21,3 +21,103 @@
 	            root.button()
             pos_hint: {"center_x": .9, "center_y": .1}
             elevation: 1
+
+        MDFloatingActionButton:
+            icon: "plus"
+            md_bg_color: app.theme_cls.primary_color
+            on_release:
+	            root.button_go_to_add_entry()
+            pos_hint: {"center_x": .9, "center_y": .1}
+            elevation: 1
+
+<DeliverItem>
+    BoxLayout:
+	    orientation: 'vertical'
+        size: root.width, root.height
+        padding: 2
+
+        MDTopAppBar:
+            id: reload_btn_icon
+            title: "Deliver Item"
+            elevation: 1
+            #md_bg_color: app.THEME_pri #app.theme_cls.accent_color
+            left_action_items: [["arrow-left-bold-circle-outline", lambda x: root.button_cancel()]]
+            #right_action_items: [["dice-d20-outline", lambda x: root.dysplay_disce_card()]]
+
+        BoxLayout:
+            orientation: 'vertical'
+            size: root.width, root.height
+            padding: 2
+
+            TwoLineAvatarIconListItem:
+                text: "Storage"
+                secondary_text: "Secondary text here"
+                id: storage_picked
+
+                IconLeftWidget:
+                    icon: "locker"
+
+                IconRightWidget:
+                    icon: "magnify"
+
+            TwoLineAvatarIconListItem:
+                text: "Item"
+                secondary_text: "Secondary text here"
+                id: item_picked
+
+                IconLeftWidget:
+                    icon: "pen"
+
+                IconRightWidget:
+                    icon: "magnify"
+
+            TwoLineAvatarIconListItem:
+                text: "how many??"
+                secondary_text: "Secondary text here"
+                id: num_items
+                on_size:
+                    self.ids._right_container.width = container.width
+                    self.ids._right_container.x = container.width
+
+                IconLeftWidget:
+                    icon: "sort-numeric-variant"
+
+                YourContainer:
+                    id: container
+
+                    MDIconButton:
+                        icon: "plus"
+
+                    MDIconButton:
+                        icon: "minus"
+
+            TwoLineAvatarIconListItem:
+                text: "Worker"
+                secondary_text: "Secondary text here"
+                id: worker_picked
+
+                IconLeftWidget:
+                    icon: "account-arrow-down"
+
+                IconRightWidget:
+                    icon: "magnify"
+
+        BoxLayout:
+            orientation: 'vertical'
+            size: root.width, root.height
+            padding: 2
+
+            MDRectangleFlatIconButton:
+                text: "Submit"
+                font_size: "20sp"
+                theme_text_color: "Custom"
+                text_color: "white"
+                #line_color: "black"
+                theme_icon_color: "Custom"
+                icon_color: "white"
+                icon: "duck"
+                md_bg_color: app.theme_cls.primary_color
+                on_release:
+                    #root.button()
+                pos_hint: {"center_x": .8, "center_y": .1}
+                elevation: 1
