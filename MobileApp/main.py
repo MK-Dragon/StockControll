@@ -65,9 +65,50 @@ class LoginScreen(Screen):
         print(f'pw: {password}')
 
         # try connection
+        try:
+            login_info = {
+                'user': user,
+                'password': password
+            }
+
+            response = requests.get('http://127.0.0.1:5000/login', json=login_info)
+            debug_MobileApp.info(f'\t{response = }')
+            for i in response.json():
+                debug_MobileApp.info(f'\t\t{i}')
+
+            # TODO: Encrypt and Decrypt JSON String
+
+            db_data = response.json()[0]
+
+            if db_data['login'] == True:
+                # reset login screen
+                self.pw_field.text = ''
+
+                main_app.screen_manager.transition.direction = 'up'
+                main_app.screen_manager.current = 'Main Screen'
+            elif db_data['login'] == False:
+                print("... Wrong shit!")
+                open_popup(
+                    title="Failed Login",
+                    icon='wifi-off',
+                    text_1="Wrong Username or Password",
+                    text_2='If you forgot your login info,',
+                    text_3='Please Contact the Admin'
+                )
+            else:
+                debug_MobileApp.error(f'\tFailed to Login...')
+
+        except Exception as err:
+            debug_MobileApp.error(f'No Connection: {err}')
+            open_popup(
+                title="Failed to Connect:",
+                icon='wifi-off',
+                text_1="No Connection!",
+                text_2='Check Internet Connection',
+                text_3='Or Try Again Later'
+            )
         # if login ok: go to main screen
-        main_app.screen_manager.transition.direction = 'up'
-        main_app.screen_manager.current = 'Main Screen'
+
 
 
 class MainScreen(Screen):
@@ -90,35 +131,14 @@ class MainScreen(Screen):
         except Exception as err:
             debug_MobileApp.error(f'No Connection: {err}')
             print("No Connection!! ^_^")
-
-            items = []
-            items.append(
-                ThreeLineAvatarListItem(
-                    IconLeftWidget(
-                        icon='wifi-off'
-                    ),
-                    text="No Connection!",
-                    secondary_text='Check Internet Connection',
-                    tertiary_text='Or Try Again Later'
-                ),
-            )
-
-            # Popup:
-            self.dialog = MDDialog(
+            open_popup(
                 title="Failed to Connect:",
-                type="confirmation",
-                items=items,
-                content_cls=PopupError(),
-                buttons=[
-                    MDFlatButton(
-                        text="OK",
-                        theme_text_color="Custom",
-                        text_color=main_app.theme_cls.primary_color,
-                        on_release=lambda x: self.dialog.dismiss()
-                    ),
-                ],
+                icon='wifi-off',
+                text_1="No Connection!",
+                text_2='Check Internet Connection',
+                text_3='Or Try Again Later'
             )
-            self.dialog.open()
+
 
     def item_clicked(self, instance):
         id = instance.id
@@ -132,6 +152,10 @@ class MainScreen(Screen):
     def button_go_to_add_entry(self):
         main_app.screen_manager.transition.direction = 'left'
         main_app.screen_manager.current = 'Deliver Item'
+
+    def button_go_to_login_screen(self):
+        main_app.screen_manager.transition.direction = 'down'
+        main_app.screen_manager.current = 'Login Screen'
 
 
 class DeliverItem(Screen):
@@ -185,6 +209,48 @@ class DeliverItem(Screen):
 
 #TODO: Note: for the 'search' list[tuples] -> list[dict] like {'blue pen': 1} Use dict.keys -> list[keys] and use 'FuzzyWuzzy' ^_^
 
+
+
+# Helper Funtions:
+def open_popup(title:str, text_1:str, text_2:str='', text_3:str='', icon:str='alert'):
+    '''
+    Opens a confirmation PopUp with:
+
+    :param title:
+    :param text_1:
+    :param text_2:
+    :param text_3:
+    :param icon:
+    :return:
+    '''
+    items = []
+    items.append(
+        ThreeLineAvatarListItem(
+            IconLeftWidget(
+                icon=icon
+            ),
+            text=text_1,
+            secondary_text=text_2,
+            tertiary_text=text_3
+        ),
+    )
+
+    # Popup:
+    dialog = MDDialog(
+        title=title,
+        type="confirmation",
+        items=items,
+        content_cls=PopupError(),
+        buttons=[
+            MDFlatButton(
+                text="OK",
+                theme_text_color="Custom",
+                text_color=main_app.theme_cls.primary_color,
+                on_release=lambda x: dialog.dismiss()
+            ),
+        ],
+    )
+    dialog.open()
 
 
 # Custom widgets:

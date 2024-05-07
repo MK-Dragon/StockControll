@@ -25,6 +25,32 @@ debug_flask_server.info('---//---')
 
 
 app = Flask(__name__)
+# TODO: Encrypt and Decrypt JSON String
+
+@app.route('/login', methods=['GET'])
+def login():
+    debug_flask_server.info('/login')
+    try:
+        user_info = request.get_json(force=True)
+        debug_flask_server.info(f'\t{user_info}')
+
+        if db.Validate_Login(user=user_info['user'], password=user_info['password']):
+            resp = [{
+                'login': True,
+                'worker': db.Read_Full_Table('colaboradores'),
+                'storage': db.Read_Full_Table('armarios'),
+                'items': db.Read_Full_Table('items')
+            }]
+            return jsonify(resp)
+        else:
+            resp = [{
+                'login': False,
+                'error': "Wrong user or Password",
+                'failed_loging': 1
+            }]
+            return jsonify(resp)
+    except:
+        debug_flask_server.error('\tNo JSON Item Received (?)')
 
 
 @app.route('/items', methods=['GET'])
