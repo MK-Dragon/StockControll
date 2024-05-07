@@ -10,25 +10,40 @@
         size: root.width, root.height
         padding: 2
 
-        MDScrollView:
-            MDList:
-                id: container
-
-        MDFloatingActionButton:
-            icon: "duck"
-            md_bg_color: app.theme_cls.primary_color
-            on_release:
-	            root.button()
-            pos_hint: {"center_x": .9, "center_y": .1}
+        MDTopAppBar:
+            id: reload_btn_icon
+            title: "Stock Control"
             elevation: 1
+            #md_bg_color: app.THEME_pri #app.theme_cls.accent_color
+            left_action_items:[["menu"], ["earth"]]
+            right_action_items: [["account", lambda x: root.dysplay_disce_card()]]
 
-        MDFloatingActionButton:
-            icon: "plus"
-            md_bg_color: app.theme_cls.primary_color
-            on_release:
-	            root.button_go_to_add_entry()
-            pos_hint: {"center_x": .9, "center_y": .1}
-            elevation: 1
+        BoxLayout:
+            cols: 1
+            orientation: 'vertical'
+            size: root.width, root.height
+            padding: 2
+
+            MDScrollView:
+                MDList:
+                    id: container
+
+            MDFloatingActionButton:
+                icon: "duck"
+                md_bg_color: app.theme_cls.primary_color
+                on_release:
+                    root.button()
+                pos_hint: {"center_x": .9, "center_y": .1}
+                elevation: 1
+
+            MDFloatingActionButton:
+                icon: "plus"
+                md_bg_color: app.theme_cls.primary_color
+                on_release:
+                    root.button_go_to_add_entry()
+                pos_hint: {"center_x": .9, "center_y": .1}
+                elevation: 1
+
 
 <DeliverItem>
     BoxLayout:
@@ -51,7 +66,7 @@
 
             TwoLineAvatarIconListItem:
                 text: "Storage"
-                secondary_text: "Secondary text here"
+                secondary_text: root.label_storage
                 id: storage_picked
 
                 IconLeftWidget:
@@ -73,7 +88,7 @@
 
             TwoLineAvatarIconListItem:
                 text: "how many??"
-                secondary_text: "Secondary text here"
+                secondary_text: root.label_num_items
                 id: num_items
                 on_size:
                     self.ids._right_container.width = container.width
@@ -87,9 +102,13 @@
 
                     MDIconButton:
                         icon: "plus"
+                        on_release:
+                            root.button_plus()
 
                     MDIconButton:
                         icon: "minus"
+                        on_release:
+                            root.button_minus()
 
             TwoLineAvatarIconListItem:
                 text: "Worker"
@@ -121,3 +140,21 @@
                     #root.button()
                 pos_hint: {"center_x": .8, "center_y": .1}
                 elevation: 1
+
+
+<PopupError>
+    container: container
+
+    BoxLayout:
+        orientation: "vertical"
+        spacing: "12dp"
+        size_hint_y: None
+        id: container
+
+        MDLabel:
+            id: label
+            text: "Error:"
+            adaptive_size: True
+            #color: app.THEME_txt
+            pos: "12dp", "12dp"
+            bold: True
