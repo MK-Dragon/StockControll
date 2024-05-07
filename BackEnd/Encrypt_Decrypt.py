@@ -4,7 +4,7 @@ from Crypto.Util.Padding import pad, unpad  # Importação de funções de preen
 import base64  # Importação da biblioteca base64 para codificação e decodificação
 
 # TODO: Clean this up ^_^
-def encriptar_dados(frase: str, chave =b'chave_16_bytes12') -> tuple:
+def encriptar_dados(frase: str, chave = b'chave_16_bytes12') -> tuple:
     """
     Função para encriptar uma frase usando AES (Advanced Encryption Standard) em modo CBC (Cipher Block Chaining).
 
@@ -22,7 +22,7 @@ def encriptar_dados(frase: str, chave =b'chave_16_bytes12') -> tuple:
     texto_encriptado = base64.b64encode(texto_encriptado).decode('utf-8')  # Converte a frase encriptada para base64 e decodifica para string UTF-8
     return iv, texto_encriptado  # Retorna o IV e a frase encriptada como uma tupla
 
-def desencriptar_dados(iv: str, texto_encriptado: str, chave =b'chave_16_bytes12') -> str:
+def desencriptar_dados(iv: str, texto_encriptado: str, chave = b'chave_16_bytes12') -> str:
     """
     Função para desencriptar uma frase usando AES (Advanced Encryption Standard) em modo CBC (Cipher Block Chaining).
 

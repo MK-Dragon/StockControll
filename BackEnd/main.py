@@ -1,5 +1,6 @@
 # Flask as API
 from flask import Flask, jsonify, request
+import json
 # DataBase Manager
 import DataBase_Manager as db
 # Extras
