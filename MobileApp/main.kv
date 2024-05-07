@@ -1,4 +1,73 @@
 <LoginScreen>
+    container: container
+    user_field: user_field
+    pw_field: pw_field
+
+    BoxLayout:
+	    orientation: 'vertical'
+        size: root.width, root.height
+        padding: 2
+
+        BoxLayout:
+            orientation: 'vertical'
+            size: root.width, root.height
+            padding: 4
+            spacing: "30dp"
+            id: container
+
+            # TODO: Add logo here
+            Label:
+                text: "App Logo\nPlaceHolder\n; )"
+                color: (0,0,0,1)
+
+
+            MDTextField:
+                size_hint_x: None
+                id: user_field
+                hint_text: "Username"
+                multiline: False
+                icon_left: "account"
+                mode: "rectangle"
+                background_color: app.theme_cls.bg_normal
+                width: root.width*0.75 #"300dp"
+                pos_hint: {"center_y": .5}
+                pos_hint: {"center_x": .5}
+
+
+            MDTextField:
+                size_hint_x: None
+                id: pw_field
+                hint_text: "Password"
+                multiline: False
+                password: True
+                icon_left: "key-variant"
+                mode: "rectangle"
+                background_color: app.theme_cls.bg_normal
+                width: root.width*0.75 #"300dp"
+                pos_hint: {"center_y": .5}
+                pos_hint: {"center_x": .5}
+
+
+        FloatLayout:
+            orientation: 'vertical'
+            size: root.width, root.height
+            padding: 2
+
+            MDRectangleFlatIconButton:
+                text: "Login"
+                font_size: "20sp"
+                theme_text_color: "Custom"
+                text_color: "white"
+                #line_color: "black"
+                theme_icon_color: "Custom"
+                icon_color: "white"
+                icon: "duck"
+                md_bg_color: app.theme_cls.primary_color
+                on_release:
+                    root.button_login()
+                pos_hint: {"center_x": .5, "center_y": .25}
+                elevation: 1
+
 
 
 <MainScreen>
@@ -23,6 +92,7 @@
             orientation: 'vertical'
             size: root.width, root.height
             padding: 2
+            spacing: "20dp"
 
             MDScrollView:
                 MDList:
@@ -142,6 +212,8 @@
                 elevation: 1
 
 
+# Custom widgets:
+
 <PopupError>
     container: container
 
@@ -158,3 +230,6 @@
             #color: app.THEME_txt
             pos: "12dp", "12dp"
             bold: True
+
+
+

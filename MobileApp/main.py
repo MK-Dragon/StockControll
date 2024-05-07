@@ -18,10 +18,16 @@ from kivymd.uix.list import IconLeftWidget, IconRightWidget
 from kivymd.uix.list import IRightBodyTouch
 from kivy.uix.popup import Popup
 from kivymd.uix.dialog import MDDialog
+from kivymd.uix.relativelayout import MDRelativeLayout
 
 
 import requests
 import logging
+
+
+# Data Holder:
+db_data: dict = {}
+
 
 
 def setup_logger(name, log_file, level=logging.INFO): #TODO: change INFO to ERROR before py -> APK
@@ -47,7 +53,22 @@ debug_MobileApp.info('---//---')
 
 
 class LoginScreen(Screen):
-    pass
+    user_field = ObjectProperty(None)
+    pw_field = ObjectProperty(None)
+
+    def button_login(self):
+        debug_MobileApp.info(f'Login:')
+        # Get user and password
+        user = self.user_field.text
+        print(f'user: {user}')
+        password = self.pw_field.text
+        print(f'pw: {password}')
+
+        # try connection
+        # if login ok: go to main screen
+        main_app.screen_manager.transition.direction = 'up'
+        main_app.screen_manager.current = 'Main Screen'
+
 
 class MainScreen(Screen):
     container = ObjectProperty(None)
@@ -166,7 +187,7 @@ class DeliverItem(Screen):
 
 
 
-# Custom wedgets:
+# Custom widgets:
 class YourContainer(IRightBodyTouch, MDBoxLayout):
     # use for TwoLineAvatarIconListItem: with 2 left items
     adaptive_width = True
@@ -188,10 +209,10 @@ class Main(MDApp):
         # Screen Management:
         self.screen_manager = ScreenManager()
 
-        '''self.login_screen = LoginScreen()
+        self.login_screen = LoginScreen()
         screen = Screen(name='Login Screen')
         screen.add_widget(self.login_screen)
-        self.screen_manager.add_widget(screen)'''
+        self.screen_manager.add_widget(screen)
 
         self.main_screen = MainScreen()
         screen = Screen(name='Main Screen')
