@@ -1,6 +1,7 @@
 # Flask as API
 from flask import Flask, jsonify, request
-import json
+#import json
+import DEncrypt
 # DataBase Manager
 import DataBase_Manager as db
 # Extras
@@ -31,7 +32,9 @@ app = Flask(__name__)
 def login():
     debug_flask_server.info('/login')
     try:
-        user_info = request.get_json(force=True)
+        user_info = request.get_json() # force=True
+        #user_info = DEncrypt.decrypt_from_json(user_info)
+
         debug_flask_server.info(f'\t{user_info}')
 
         if db.Validate_Login(user=user_info['user'], password=user_info['password']):
@@ -41,6 +44,7 @@ def login():
                 'storage': db.Read_Full_Table('armarios'),
                 'items': db.Read_Full_Table('items')
             }]
+            #resp = DEncrypt.encrypt_to_json(resp)
             return jsonify(resp)
         else:
             resp = [{
@@ -48,6 +52,7 @@ def login():
                 'error': "Wrong user or Password",
                 'failed_loging': 1
             }]
+            #resp = DEncrypt.encrypt_to_json(resp)
             return jsonify(resp)
     except:
         debug_flask_server.error('\tNo JSON Item Received (?)')

@@ -21,6 +21,7 @@ from kivymd.uix.dialog import MDDialog
 from kivymd.uix.relativelayout import MDRelativeLayout
 
 
+import DEncrypt
 import requests
 import logging
 
@@ -72,6 +73,7 @@ class LoginScreen(Screen):
             }
 
             response = requests.get('http://127.0.0.1:5000/login', json=login_info)
+            #response = DEncrypt.decrypt_from_json(response)
             debug_MobileApp.info(f'\t{response = }')
             for i in response.json():
                 debug_MobileApp.info(f'\t\t{i}')
