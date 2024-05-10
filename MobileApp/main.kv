@@ -116,6 +116,8 @@
 
 
 <DeliverItem>
+    container2: container2
+
     BoxLayout:
 	    orientation: 'vertical'
         size: root.width, root.height
@@ -134,27 +136,8 @@
             size: root.width, root.height
             padding: 2
 
-            TwoLineAvatarIconListItem:
-                text: "Storage"
-                secondary_text: root.label_storage
-                id: storage_picked
-
-                IconLeftWidget:
-                    icon: "locker"
-
-                IconRightWidget:
-                    icon: "magnify"
-
-            TwoLineAvatarIconListItem:
-                text: "Item"
-                secondary_text: "Secondary text here"
-                id: item_picked
-
-                IconLeftWidget:
-                    icon: "pen"
-
-                IconRightWidget:
-                    icon: "magnify"
+            MDList:
+                id: container2
 
             TwoLineAvatarIconListItem:
                 text: "how many??"
@@ -180,16 +163,7 @@
                         on_release:
                             root.button_minus()
 
-            TwoLineAvatarIconListItem:
-                text: "Worker"
-                secondary_text: "Secondary text here"
-                id: worker_picked
 
-                IconLeftWidget:
-                    icon: "account-arrow-down"
-
-                IconRightWidget:
-                    icon: "magnify"
 
         BoxLayout:
             orientation: 'vertical'
@@ -207,7 +181,7 @@
                 icon: "duck"
                 md_bg_color: app.theme_cls.primary_color
                 on_release:
-                    #root.button()
+                    root.button_submit()
                 pos_hint: {"center_x": .8, "center_y": .1}
                 elevation: 1
 
@@ -232,4 +206,14 @@
             bold: True
 
 
+<PickItem>
+    #container: container
+
+    BoxLayout:
+        orientation: "vertical"
+        spacing: "12dp"
+        size_hint_y: None
+        #MDScrollView:
+            #MDList:
+                #id: container
 

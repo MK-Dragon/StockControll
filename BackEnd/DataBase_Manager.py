@@ -332,10 +332,11 @@ def Add_User(username: str, password: str) -> bool:
 
 # TODO [nice to have]: Add Edit User info
 
-def Validate_Login(user: str, password: str) -> bool:
+def Validate_Login(user: str, password: str) -> tuple:
     '''Login
-    :return True all good
-    :return False if user/password is wrong'''
+
+    :return (True + id) "all good"
+    :return (False + error) if user/password is wrong'''
 
     debug_DataBase.info('---')
     debug_DataBase.info("Validate Login")
@@ -344,7 +345,7 @@ def Validate_Login(user: str, password: str) -> bool:
 
     if users == False:
         debug_DataBase.error("\tFail to Query DB")
-        return False
+        return False, 'Fail to Query DataBase'
 
     user_data = None
     for i in users:
@@ -354,15 +355,15 @@ def Validate_Login(user: str, password: str) -> bool:
 
     if user_data == None:
         debug_DataBase.error("\tUsername not in DataBase!")
-        return False
+        return False, 'Username not in DataBase'
 
     User_Password = Encrypt_Decrypt.desencriptar_dados(iv=user_data[3], texto_encriptado=user_data[2])
     if password == User_Password:
         debug_DataBase.info(f"\tUser: {user} Loged in!")
-        return True
+        return True, user_data[0]
     else:
         debug_DataBase.error(f"\tWrong Username or Password! {user}")
-        return False
+        return False, 'Wrong Username or Password!'
 
 
 

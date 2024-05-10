@@ -64,26 +64,26 @@ class Test_DataBase(unittest.TestCase):
         c = DataBase_Manager.Validate_Login('mARCO', '12345')
 
         message = f'Login: Correct User + Password [{a}] (expected True)'
-        if a == True:
+        if a[0] == True:
             report.info(message)
         else:
             report.error(message)
 
         message = f'Login: Correct User + Wrong Password [{b}] (expected False)'
-        if b == False:
+        if b[0] == False:
             report.info(message)
         else:
             report.error(message)
 
         message = f'Login: Wrong User + Password [{c}] (expected False)'
-        if c == False:
+        if c[0] == False:
             report.info(message)
         else:
             report.error(message)
 
-        self.assertEqual(a, True)
-        self.assertEqual(b, False)
-        self.assertEqual(c, False)
+        self.assertEqual(a, (True, 1))
+        self.assertEqual(b[0], False)
+        self.assertEqual(c[0], False)
 
 
     # Workers:

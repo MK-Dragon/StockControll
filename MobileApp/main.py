@@ -27,7 +27,13 @@ import logging
 
 
 # Data Holder:
-db_data: dict = {}
+class DataBase_Data:
+    db_data: dict = {}
+    popup_data = None
+
+    def load_popup_data(self, data):
+        self.popup_data = data
+DATA = DataBase_Data()
 
 
 
@@ -61,9 +67,7 @@ class LoginScreen(Screen):
         debug_MobileApp.info(f'Login:')
         # Get user and password
         user = self.user_field.text
-        print(f'user: {user}')
         password = self.pw_field.text
-        print(f'pw: {password}')
 
         # try connection
         try:
@@ -72,33 +76,39 @@ class LoginScreen(Screen):
                 'password': password
             }
 
-            response = requests.get('http://127.0.0.1:5000/login', json=login_info)
-            #response = DEncrypt.decrypt_from_json(response)
-            debug_MobileApp.info(f'\t{response = }')
-            for i in response.json():
-                debug_MobileApp.info(f'\t\t{i}')
+            # Encrypt data
+            login_info = DEncrypt.encrypt_to_json(login_info)
 
-            # TODO: Encrypt and Decrypt JSON String
+            response = requests.get(
+                'http://127.0.0.1:5000/login',
+                json=login_info
+            )
 
-            db_data = response.json()[0]
+            # Decrypt the response
+            db_data = response.json()
+            db_data = DEncrypt.decrypt_from_json(db_data)
 
             if db_data['login'] == True:
                 # reset login screen
                 self.pw_field.text = ''
+                # Save data for later
+                DATA.db_data = db_data
 
+                # Go to Main Screen
                 main_app.screen_manager.transition.direction = 'up'
                 main_app.screen_manager.current = 'Main Screen'
+
             elif db_data['login'] == False:
-                print("... Wrong shit!")
+                # TODO: Add limit to wrong password
                 open_popup(
                     title="Failed Login",
-                    icon='wifi-off',
+                    icon='account',
                     text_1="Wrong Username or Password",
                     text_2='If you forgot your login info,',
                     text_3='Please Contact the Admin'
                 )
             else:
-                debug_MobileApp.error(f'\tFailed to Login...')
+                debug_MobileApp.error(f'\tFailed to Login...') # ¨\_(^-^)_/¨
 
         except Exception as err:
             debug_MobileApp.error(f'No Connection: {err}')
@@ -109,7 +119,6 @@ class LoginScreen(Screen):
                 text_2='Check Internet Connection',
                 text_3='Or Try Again Later'
             )
-        # if login ok: go to main screen
 
 
 
@@ -161,27 +170,160 @@ class MainScreen(Screen):
 
 
 class DeliverItem(Screen):
-    # ids:
-    '''storage_picked = ObjectProperty(None)
-    item_picked = ObjectProperty(None)
-    num_items  = ObjectProperty(None)'''
-
     label_storage = StringProperty('')
     label_item = StringProperty('')
     num_items = 0
     label_num_items = StringProperty('')
     label_worker = StringProperty('')
 
-    def on_kv_post(self, *args):
+    dialog = None
+
+    entry_data:dict = {}
+
+    def on_kv_post(self, base_widget):
         self.reset_fields()
+        self.display_fields()
+
 
     def reset_fields(self):
-        self.label_storage = 'Click to Pick'
-        self.label_item = 'Click to Pick'
+        self.label_worker = 'Click to Select'
+        self.label_storage = 'Click to Select'
+        self.label_item = 'Click to Select'
         self.num_items = 1
         self.label_num_items = str(self.num_items)
-        self.label_worker = 'Click to Pick'
 
+        self.entry_data = {
+            'worker': None,
+            'storage': None,
+            'item': None
+        }
+
+    def display_fields(self):
+        # Clear
+        self.ids.container2.clear_widgets(children=None)
+
+        #Display all input fields:
+        self.ids.container2.add_widget(
+            TwoLineAvatarIconListItem(
+                IconLeftWidget(
+                    icon='account-arrow-down'
+                ),
+                text='Worker',
+                secondary_text=self.label_worker,
+                id='Worker',
+                on_release=self.select_item
+            )
+        )
+        self.ids.container2.add_widget(
+            TwoLineAvatarIconListItem(
+                IconLeftWidget(
+                    icon='locker'
+                ),
+                text='Storage',
+                secondary_text=self.label_storage,
+                id='Storage',
+                on_release=self.select_item
+            )
+        )
+        self.ids.container2.add_widget(
+            TwoLineAvatarIconListItem(
+                IconLeftWidget(
+                    icon='pen'
+                ),
+                text='Item',
+                secondary_text=self.label_item,
+                id='Items',
+                on_release=self.select_item
+            )
+        )
+
+    def select_item(self, instance):
+        # Get Index of Server Clicked:
+        field = instance.id
+        print(f'select_item {field}]')
+        DATA.popup_data = field.lower()
+
+        # debug
+        '''DATA.db_data = {
+            'login': True,
+            'user_id': 1,
+            'worker': [['1', '354', 'zé'], ['2', '454', 'rita']],
+            'storage': [['1', 'whouse', 'hee'], ['2', 'box1', 'asd']],
+            'items': [('1', 'blue pen', 'Algo'), ('2', 'red pen', 'algo')]
+        }'''
+
+
+        items = [] # append items ^_^
+
+        for entry in DATA.db_data[field.lower()]:
+            items.append(
+                TwoLineAvatarIconListItem(
+                    IconLeftWidget(
+                        icon='duck'
+                        #theme_icon_color="Custom",
+                        #icon_color=color
+                    ),
+                    IconRightWidget(
+                        icon='duck'
+                        #id=f"{server['Index']}",
+                        #on_release=self.delete_button
+                    ),
+                    text=f"{entry[1]}",
+                    secondary_text=f'{entry[2]}',
+                    id=f"{entry[0]}",
+                    on_release=self.item_clicked
+                )
+            )
+
+        # Popup list:
+        self.dialog = MDDialog(
+            title=field,
+            type="confirmation",
+            items=items,
+            buttons=[
+                MDFlatButton(
+                    text="CANCEL",
+                    theme_text_color="Custom",
+                    #text_color=self.theme_cls.primary_color,
+                    id='cancel',
+                    on_release=lambda x: self.dialog.dismiss()
+                )
+            ]
+        )
+        self.dialog.open()
+
+    def item_clicked(self, instance):
+        # save data
+        id = instance.id
+        self.entry_data[DATA.popup_data] = id
+
+        # update label
+        if DATA.popup_data == 'worker':
+            print('worker')
+            for i in DATA.db_data[DATA.popup_data]:
+                if i[0] == id:
+                    print('\tid')
+                    self.label_worker = i[2]
+                    print(f'\t\t{self.label_worker}')
+
+        elif DATA.popup_data == 'storage':
+            for i in DATA.db_data[DATA.popup_data]:
+                if i[0] == id:
+                    self.label_storage = i[1]
+                    print(f'\t\t{self.label_storage}')
+
+        elif DATA.popup_data == 'items':
+            for i in DATA.db_data[DATA.popup_data]:
+                if i[0] == id:
+                    self.label_item = i[1]
+                    print(f'\t\t{self.label_item}')
+
+        print(f'{self.entry_data = }')
+
+        # desmiss popup:
+        self.dialog.dismiss()
+        # refresh fields!
+        self.display_fields()
 
     def button_cancel(self):
         # Reset all
@@ -191,11 +333,78 @@ class DeliverItem(Screen):
         main_app.screen_manager.current = 'Main Screen'
 
     def button_submit(self):
-        # Send data
+        try:
+            # Get data:
+            data_package = {
+                'user_id': DATA.db_data['user_id'],
+                'worker_id': self.entry_data['worker'],
+                'item_id': self.entry_data['items'],
+                'num': self.num_items,
+                'storage_id': self.entry_data['storage']
+            }
 
-        # Go back to main screen
-        main_app.screen_manager.transition.direction = 'right'
-        main_app.screen_manager.current = 'Main Screen'
+            #TODO: add check for 'Click to Select'... popup error blank field...
+
+            # Encrypt and Send data
+            data_package = DEncrypt.encrypt_to_json(data_package)
+            response = requests.post(
+                'http://127.0.0.1:5000/items',
+                json=data_package
+            )
+
+            # decrypt response
+            db_data = response.json()
+            db_data = DEncrypt.decrypt_from_json(db_data)
+
+            # TODO: Review the popup... needs work
+            if db_data['status'] == 'True':
+                print('All good ^_^')
+                open_popup(
+                    title="Operation Status:",
+                    icon='emoticon-happy',
+                    text_1="Item Delivered!",
+                    text_2='Items left: [{?}]',
+                    text_3=''
+                )
+            elif db_data['status'] == 'False':
+                print('Operation Failed!')
+                open_popup(
+                    title="Operation Status:",
+                    icon='emoticon-sad',
+                    text_1="An Error Has Occurred!",
+                    text_2='Item Was NOT Delivered!',
+                    text_3='Try again later...'
+                )
+            else:
+                print("Error... Opps..")
+                open_popup(
+                    title="Operation Status:",
+                    icon='robot-confused',
+                    text_1="An Error Has Occurred!",
+                    text_2='data error...',
+                    text_3='Try again later...'
+                )
+
+            # Ask: new entry?? yes -> Stay / no -> back to main screen
+            if DATA.popup_data == 'yes':
+                print('Popup YES!!!')
+            elif DATA.popup_data == 'no':
+                    print('Popup NO!!!')
+                    # Go back to main screen
+                    main_app.screen_manager.transition.direction = 'right'
+                    main_app.screen_manager.current = 'Main Screen'
+            # reset popup data...
+            DATA.popup_data = None
+
+        except Exception as err:
+            debug_MobileApp.error(f'Error Delivering item: {err}')
+            open_popup(
+                title="Failed to Connect:",
+                icon='emoticon-sad',
+                text_1="ErrorDelivering item!",
+                text_2='Check Internet Connection',
+                text_3='Or Try Again Later'
+            )
 
     def button_plus(self):
         print("plus")
@@ -255,6 +464,9 @@ def open_popup(title:str, text_1:str, text_2:str='', text_3:str='', icon:str='al
     dialog.open()
 
 
+
+
+
 # Custom widgets:
 class YourContainer(IRightBodyTouch, MDBoxLayout):
     # use for TwoLineAvatarIconListItem: with 2 left items
@@ -277,6 +489,13 @@ class Main(MDApp):
         # Screen Management:
         self.screen_manager = ScreenManager()
 
+
+
+        self.main_screen = DeliverItem()
+        screen = Screen(name='Deliver Item')
+        screen.add_widget(self.main_screen)
+        self.screen_manager.add_widget(screen)
+
         self.login_screen = LoginScreen()
         screen = Screen(name='Login Screen')
         screen.add_widget(self.login_screen)
@@ -287,10 +506,9 @@ class Main(MDApp):
         screen.add_widget(self.main_screen)
         self.screen_manager.add_widget(screen)
 
-        self.main_screen = DeliverItem()
-        screen = Screen(name='Deliver Item')
-        screen.add_widget(self.main_screen)
-        self.screen_manager.add_widget(screen)
+
+
+
 
         return self.screen_manager
 

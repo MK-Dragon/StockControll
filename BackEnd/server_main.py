@@ -33,27 +33,31 @@ def login():
     debug_flask_server.info('/login')
     try:
         user_info = request.get_json() # force=True
-        #user_info = DEncrypt.decrypt_from_json(user_info)
+        user_info = DEncrypt.decrypt_from_json(user_info)
 
+        # Log user_info...(?)
         debug_flask_server.info(f'\t{user_info}')
 
-        if db.Validate_Login(user=user_info['user'], password=user_info['password']):
-            resp = [{
+        login_info = db.Validate_Login(user=user_info['user'], password=user_info['password'])
+
+        if login_info[0]:
+            resp = {
                 'login': True,
+                'user_id': login_info[1],
                 'worker': db.Read_Full_Table('colaboradores'),
                 'storage': db.Read_Full_Table('armarios'),
                 'items': db.Read_Full_Table('items')
-            }]
-            #resp = DEncrypt.encrypt_to_json(resp)
-            return jsonify(resp)
+            }
+            resp = DEncrypt.encrypt_to_json(resp)
+            return resp #jsonify(resp)
         else:
-            resp = [{
+            resp = {
                 'login': False,
                 'error': "Wrong user or Password",
                 'failed_loging': 1
-            }]
-            #resp = DEncrypt.encrypt_to_json(resp)
-            return jsonify(resp)
+            }
+            resp = DEncrypt.encrypt_to_json(resp)
+            return resp #jsonify(resp)
     except:
         debug_flask_server.error('\tNo JSON Item Received (?)')
 
@@ -65,6 +69,40 @@ def get_employees():
     for d in data:
         debug_flask_server.info(f'\t{d}')
     return jsonify(data)
+
+@app.route('/items', methods=['POST'])
+def items_posted():
+    print('/items -> posted')
+    try:
+        # Get & decrypt data
+        entry_data = request.get_json()
+        entry_data = DEncrypt.decrypt_from_json(entry_data)
+        debug_flask_server.info(f'Decrypted: {entry_data}')
+
+        # Save data do DataBase
+        status = db.Deliver_Item(
+            user_id=entry_data['user_id'],
+            worker_id=entry_data['worker_id'],
+            item_id=entry_data['item_id'],
+            num= -entry_data['num'],
+            storage_id=entry_data['storage_id']
+        )
+
+        # response:
+        if status:
+            resp = {
+                'status': 'True'
+            }
+        else:
+            resp = {
+                'status': 'False'
+            }
+        # Encrypt and Send
+        resp = DEncrypt.encrypt_to_json(resp)
+        return jsonify(resp)
+    except Exception as err:
+        debug_flask_server.error(f'Error: {err}')
+
 
 @app.route('/item/info', methods=['GET'])
 def my_test_endpoint():
