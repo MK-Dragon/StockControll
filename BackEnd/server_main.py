@@ -104,6 +104,17 @@ def items_posted():
         debug_flask_server.error(f'Error: {err}')
 
 
+@app.route('/reload', methods=['GET'])
+def reload_data():
+    resp = {
+        'worker': db.Read_Full_Table('colaboradores'),
+        'storage': db.Read_Full_Table('armarios'),
+        'items': db.Read_Full_Table('items')
+    }
+    resp = DEncrypt.encrypt_to_json(resp)
+    return resp
+
+
 @app.route('/item/info', methods=['GET'])
 def my_test_endpoint():
     debug_flask_server.info('/item/info:')

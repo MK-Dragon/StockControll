@@ -203,8 +203,8 @@ def CreateDB():
     # Colaboradores:
     sql_code.append('''CREATE TABLE colaboradores
     (id INTEGER PRIMARY KEY,
-    num_colaborador INTEGER UNIQUE,
     nome TEXT NOT NULL,
+    num_colaborador INTEGER UNIQUE,
     activo INTEGER)''')
 
     # Armários
@@ -674,8 +674,9 @@ if __name__ == '__main__':
     Add_User('Polo', '54321')
 
     # Add test Colaboradores/workers
-    Add_Worker('Marco', 12345)
+    Add_Worker('Zé', 12345)
     Add_Worker('Rita', 4596)
+    Add_Worker('João', 4596)
 
     # Add test Storage
     Add_Storage('Warehouse', 'Main Warehouse')
@@ -687,6 +688,12 @@ if __name__ == '__main__':
     Add_Item('Gloves S', 'Gloves size S')
     Add_Item('Gloves M', 'Gloves size M')
     Add_Item('Gloves L', 'Gloves size L')
+
+    '''Add_Item('Black Marker', 'Permanent Markers')
+    Add_Item('White Marker', 'Permanent Markers')
+    Add_Item('Red Marker', 'Permanent Markers')
+    Add_Item('Green Marker', 'Permanent Markers')
+    Add_Item('Green Pen', 'Normal Green Pen')'''
 
     # Restock Storage
     # adding Pens to main storage
@@ -704,6 +711,12 @@ if __name__ == '__main__':
     Add_First_Stock_Entry(2, 4, 20, 5, 20)
     Add_First_Stock_Entry(2, 5, 20, 5, 20)
 
+    # Restock from store
+    ReStock(storage_restocked_id=1, item_id=3, units=10, user=2)
+    ReStock(storage_restocked_id=1, item_id=4, units=20, user=1)
+    # Restock from storage
+    ReStock(storage_source_id=1, storage_restocked_id=2, item_id=3, units=5, user=2)
+    ReStock(storage_source_id=1, storage_restocked_id=2, item_id=4, units=5, user=2)
 
     # Add Entries
     # user_1 gives worker_1: 1x blue pen + 1x gloves s
@@ -717,12 +730,12 @@ if __name__ == '__main__':
     #Query_Storage_Data(1, 1)
     #Query_Storage_Data(2, 3)
 
-
+    ExportDB()
 
     # Read Back All Data
-    Read_Full_Table('utilizadores')
+    '''Read_Full_Table('utilizadores')
     Read_Full_Table('colaboradores')
     Read_Full_Table('armarios')
     Read_Full_Table('items')
     Read_Full_Table('entrega')
-    Read_Full_Table('stock')
+    Read_Full_Table('stock')'''
