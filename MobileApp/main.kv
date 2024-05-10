@@ -273,3 +273,43 @@
             #MDList:
                 #id: container
 
+
+<DiceCard>
+    radius: (5, 5, 5, 5)
+    padding: 10
+    size_hint: (0.3), None
+    size: root.width, "100dp"
+    #md_bg_color: app.THEME_pri_light
+
+    MDRelativeLayout:
+        MDIconButton:
+            id: card_id
+            icon: "plus"
+            pos_hint: {"top": 1, "right": 1}
+            on_release:
+                app.main_window.plus_button(root.card_id)
+
+        MDIconButton:
+            icon: "minus"
+            pos_hint: {"bot": 1, "right": 1}
+            on_release:
+                app.main_window.minus_button(root.card_id)
+
+        MDIconButton:
+            icon: root.dice_icon #"dice-d20"
+            pos_hint: {"top": 1, "left": 1}
+            on_release:
+                app.main_window.icon_button(root.card_id)
+
+
+        MDTextField:
+                size_hint_x: None
+                id: user_field
+                hint_text: "Username"
+                multiline: False
+                icon_left: "account"
+                #mode: "rectangle"
+                background_color: app.theme_cls.bg_normal
+                width: root.width*0.75 #"300dp"
+                pos_hint: {"center_y": .5}
+                pos_hint: {"center_x": .5}

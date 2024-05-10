@@ -504,6 +504,13 @@ class ReStock(Screen):
             'item': None
         }
 
+    def button_cancel(self):
+        # Reset all
+        self.reset_fields()
+        # Go back to main screen
+        main_app.screen_manager.transition.direction = 'right'
+        main_app.screen_manager.current = 'Main Screen'
+
     def display_fields(self):
         # Clear
         self.ids.container2.clear_widgets(children=None)
@@ -523,7 +530,7 @@ class ReStock(Screen):
         self.ids.container2.add_widget(
             TwoLineAvatarIconListItem(
                 IconLeftWidget(
-                    icon='locar' # 'import'
+                    icon='locker' # 'import'
                 ),
                 text='Storage to Restock',
                 secondary_text=self.label_storage,
