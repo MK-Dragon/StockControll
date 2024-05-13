@@ -485,6 +485,8 @@ class ReStock(Screen):
     dialog = None
 
     entry_data: dict = {}
+    entry_key = ''
+    data_key = ''
 
     def on_kv_post(self, base_widget):
         self.reset_fields()
@@ -492,19 +494,22 @@ class ReStock(Screen):
 
 
     def reset_fields(self):
+        # TODO: reset doesn't clean the fields... love bugs... -.-
         self.label_worker = 'Click to Select'
-        self.label_storage = 'Click to Select'
-        self.label_item = 'Click to Select'
-        self.num_items = 1
-        self.label_num_items = str(self.num_items)
 
+        self.label_item = 'Click to Select'
+
+        self.label_storage_to_restock = 'Click to Select'
+        self.label_storage_source = 'Click to Select'
         self.number_of_items.text = '1'
 
         self.entry_data = {
-            'worker': None,
-            'storage': None,
-            'item': None
+            'StorageS': None,
+            'StorageR': None,
+            'Items': None
         }
+        self.entry_key = ''
+        self.data_key = ''
 
     def button_cancel(self):
         # Reset all
@@ -524,7 +529,7 @@ class ReStock(Screen):
                     icon='cube-send' # 'export'
                 ),
                 text='Storage Source',
-                secondary_text=self.label_storage,
+                secondary_text=self.label_storage_to_restock,
                 id='StorageS',
                 on_release=self.select_item
             )
@@ -535,7 +540,7 @@ class ReStock(Screen):
                     icon='locker' # 'import'
                 ),
                 text='Storage to Restock',
-                secondary_text=self.label_storage,
+                secondary_text=self.label_storage_source,
                 id='StorageR',
                 on_release=self.select_item
             )
@@ -556,11 +561,22 @@ class ReStock(Screen):
         # Get Index of Server Clicked:
         field = instance.id
         print(f'select_item {field}]')
-        DATA.popup_data = field.lower()
+
+        # set entry key:
+        self.entry_key = field
+
+        # set DATA.db_data key:
+        if field == 'StorageS' or field == 'StorageR':
+            self.data_key = 'storage'
+
+        else:
+            self.data_key = 'items'
+
+        DATA.popup_data = field#.lower()
 
         items = [] # append items ^_^
 
-        for entry in DATA.db_data[field.lower()]:
+        for entry in DATA.db_data[self.data_key]:
             items.append(
                 TwoLineAvatarIconListItem(
                     IconLeftWidget(
@@ -600,29 +616,29 @@ class ReStock(Screen):
     def item_clicked(self, instance):
         # save data
         id = instance.id
-        self.entry_data[DATA.popup_data] = id
+        self.entry_data[self.entry_key] = id
 
         print(f'\n\nitem_clicked: {id = }')
 
-        print(f'\t{DATA.popup_data = }')
-        print(f'\t{DATA.db_data[DATA.popup_data] = }')
+        print(f'\t{self.data_key = }')
+        print(f'\t{DATA.db_data[self.data_key] = }')
 
         # update label
-        if DATA.popup_data == 'worker':
-            for i in DATA.db_data[DATA.popup_data]:
+        if self.entry_key == 'StorageS':
+            for i in DATA.db_data['storage']:
                 if str(i[0]) == id:
-                    self.label_worker = i[1]
+                    self.label_storage_to_restock = i[1]
                     break
 
-        elif DATA.popup_data == 'storage':
-            for i in DATA.db_data[DATA.popup_data]:
+        elif self.entry_key == 'StorageR':
+            for i in DATA.db_data['storage']:
                 if str(i[0]) == id:
-                    self.label_storage = i[1]
+                    self.label_storage_source = i[1]
                     break
 
-        elif DATA.popup_data == 'items':
+        elif self.data_key == 'items':
             print(f'for loop:')
-            for i in DATA.db_data[DATA.popup_data]:
+            for i in DATA.db_data[self.data_key]:
                 if str(i[0]) == id:
                     self.label_item = i[1]
                     break
@@ -635,9 +651,14 @@ class ReStock(Screen):
         self.display_fields()
 
     def button_submit(self):
-        a = self.number_of_items.text
-        print(f'\n\nsubmit: {type(a) = }\n{a = }\n\n')
+        num = self.number_of_items.text
         self.number_of_items.text = 'hel'
+        print(f'{self.entry_data = } [{num}]')
+
+        # Validate
+
+        # update database
+
 
     def button_plus(self):
         print("plus")
@@ -646,7 +667,6 @@ class ReStock(Screen):
             a = int(a)
             a += 1
             self.number_of_items.text = str(a)
-            print(f'{self.label_num_items = }')
         except:
             a = a + ' Numbers Only'
             self.number_of_items.text = a
@@ -658,9 +678,8 @@ class ReStock(Screen):
             a = int(a)
             a -= 1
             self.number_of_items.text = str(a)
-            print(f'{self.label_num_items = }')
         except:
-            a = a + ' Numbers Only'
+            a = str(a) + ' Numbers Only'
             self.number_of_items.text = a
 
 
