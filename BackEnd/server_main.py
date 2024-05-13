@@ -7,6 +7,7 @@ import DataBase_Manager as db
 # Extras
 import logging
 
+
 def setup_logger(name, log_file, level=logging.INFO):
     """To setup as many loggers as you want"""
 
@@ -24,10 +25,11 @@ def setup_logger(name, log_file, level=logging.INFO):
 debug_flask_server = setup_logger('flask server', 'logs/flaskserver.log')
 debug_flask_server.info('---//---')
 
-
 app = Flask(__name__)
-# TODO: Encrypt and Decrypt JSON String
 
+
+
+# Login and Authentication:
 @app.route('/login', methods=['GET'])
 def login():
     debug_flask_server.info('/login')
@@ -62,17 +64,12 @@ def login():
         debug_flask_server.error('\tNo JSON Item Received (?)')
 
 
-@app.route('/items', methods=['GET'])
-def get_employees():
-    data = db.Read_Full_Table('items')
-    debug_flask_server.info('/items response:')
-    for d in data:
-        debug_flask_server.info(f'\t{d}')
-    return jsonify(data)
 
-@app.route('/items', methods=['POST'])
-def items_posted():
-    print('/items -> posted')
+# Add Entries:
+
+@app.route('/deliveritem', methods=['POST'])
+def DeliverItem_posted():
+    print('/DeliverItem -> posted')
     try:
         # Get & decrypt data
         entry_data = request.get_json()
@@ -103,16 +100,118 @@ def items_posted():
     except Exception as err:
         debug_flask_server.error(f'Error: {err}')
 
+@app.route('/restock', methods=['POST'])
+def ReStock_posted():
+    print('/ReStock -> posted')
+    try:
+        # Get & decrypt data
+        entry_data = request.get_json()
+        entry_data = DEncrypt.decrypt_from_json(entry_data)
+        debug_flask_server.info(f'Decrypted: {entry_data}')
+
+        # Save data do DataBase
+        status = db.ReStock(
+            user=entry_data['user_id'],
+            storage_source_id=entry_data['storage_source'],
+            storage_restocked_id=entry_data['storage_restock'],
+            item_id=entry_data['item_id'],
+            units=entry_data['num']
+        )
+
+        # response:
+        if status:
+            resp = {
+                'status': 'True'
+            }
+        else:
+            resp = {
+                'status': 'False'
+            }
+        # Encrypt and Send
+        resp = DEncrypt.encrypt_to_json(resp)
+        return jsonify(resp)
+    except Exception as err:
+        debug_flask_server.error(f'Error: {err}')
+
+
+
+# Get Information:
 
 @app.route('/reload', methods=['GET'])
 def reload_data():
     resp = {
         'worker': db.Read_Full_Table('colaboradores'),
         'storage': db.Read_Full_Table('armarios'),
-        'items': db.Read_Full_Table('items')
+        'items': db.Read_Full_Table('items'),
+        'stock': db.Read_Full_Table('stock'),
+        'restock': db.Complex_Read_Table(
+            table='stock',
+            num_results=50,
+            order_by='id',
+            order_desc=False
+        ),
+        'delivered': db.Complex_Read_Table(
+            table='entrega',
+            num_results=50,
+            order_by='id',
+            order_desc=False
+        )
     }
     resp = DEncrypt.encrypt_to_json(resp)
     return resp
+
+@app.route('/delivereditem', methods=['GET'])
+def get_delivered_items_data():
+    resp = {
+        'delivered': db.Complex_Read_Table(
+            table='entrega',
+            num_results=50,
+            order_by='id',
+            order_desc=False
+        )
+    }
+    resp = DEncrypt.encrypt_to_json(resp)
+    return resp
+
+@app.route('/restock', methods=['GET'])
+def get_restock_data():
+    resp = {
+        'restock': db.Complex_Read_Table(
+            table='restock',
+            num_results=50,
+            order_by='id',
+            order_desc=False
+        )
+    }
+    resp = DEncrypt.encrypt_to_json(resp)
+    return resp
+
+@app.route('/restock', methods=['GET'])
+def get_stock_data():
+    resp = {
+        'stock': db.Complex_Read_Table(
+            table='stock',
+            #num_results=50,
+            order_by='id',
+            order_desc=True
+        )
+    }
+    resp = DEncrypt.encrypt_to_json(resp)
+    return resp
+
+
+
+
+# ?? Remove or Edit ??
+
+@app.route('/items', methods=['GET'])
+def get_employees():
+    data = db.Read_Full_Table('items')
+    debug_flask_server.info('/items response:')
+    for d in data:
+        debug_flask_server.info(f'\t{d}')
+    return jsonify(data)
+
 
 
 @app.route('/item/info', methods=['GET'])

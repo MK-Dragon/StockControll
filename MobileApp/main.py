@@ -124,7 +124,24 @@ class LoginScreen(Screen):
 
 
 class MainScreen(Screen):
-    container = ObjectProperty(None)
+    container_notifications = ObjectProperty(None)
+    container_storage = ObjectProperty(None)
+    container_restock_entries = ObjectProperty(None)
+    container_delivery_entries = ObjectProperty(None)
+
+    def on_kv_post(self, base_widget):
+        # Get data from server
+        self.get_data_from_server()
+
+        # Load/display containers
+        self.display_all()
+
+
+# TODO: Add Notifications for low stock + "shopping list"
+
+
+
+
     def button(self):
         print("Duck Test")
         try:
@@ -151,20 +168,6 @@ class MainScreen(Screen):
                 text_3='Or Try Again Later'
             )
 
-    def button_reload(self):
-        response = requests.get('http://127.0.0.1:5000/reload')
-        data = response.json()
-        data = DEncrypt.decrypt_from_json(data)
-        if DATA.db_data == None:
-            # Debug mode only
-            DATA.db_data = data
-            DATA.db_data.update({'user_id': '1'})
-        else:
-            # Normal mode:
-            DATA.db_data['worker'] = data['worker']
-            DATA.db_data['storage'] = data['storage']
-            DATA.db_data['items'] = data['items']
-
     def item_clicked(self, instance):
         id = instance.id
         debug_MobileApp.info(f'id[{id}]')
@@ -174,6 +177,58 @@ class MainScreen(Screen):
         for i in response.json():
             print(f'\t{i}')
 
+
+    # Geting and Displaying data:
+    def get_data_from_server(self):
+        debug_MobileApp.info('Gating data from Server')
+        try:
+            response = requests.get('http://127.0.0.1:5000/reload')
+            data = response.json()
+            data = DEncrypt.decrypt_from_json(data)
+            if DATA.db_data == None:
+                # Debug mode only
+                DATA.db_data = data
+                DATA.db_data.update({'user_id': '1'})
+            else:
+                # Normal mode:
+                DATA.db_data['worker'] = data['worker']
+                DATA.db_data['storage'] = data['storage']
+                DATA.db_data['items'] = data['items']
+                DATA.db_data['stock'] = data['stock']
+                DATA.db_data['restock'] = data['restock']
+                DATA.db_data['delivered'] = data['delivered']
+            debug_MobileApp.info('\t\tall good')
+        except Exception as err:
+            debug_MobileApp.error(f'Error Re/Loading Data from Server: {err}')
+
+    def display_all(self):
+        debug_MobileApp.info('\tLoading/Displaying All Containers:')
+        self.container_notifications()
+        self.container_storage()
+        self.container_restock_entries()
+        self.container_delivery_entries()
+
+    def display_low_stock(self):
+        # TODO: ... coming soon... ish.......
+        pass
+
+    def display_stock(self):
+        # TODO:... ui/ux on the way...
+        pass
+
+    def display_restock_entries(self):
+        pass
+
+    def display_delivery_entries(self):
+        pass
+
+
+    def button_reload(self):
+        self.get_data_from_server()
+        self.display_all()
+
+
+    # Navigation:
     def button_go_to_add_entry(self):
         main_app.screen_manager.transition.direction = 'left'
         main_app.screen_manager.current = 'Deliver Item'
@@ -185,6 +240,7 @@ class MainScreen(Screen):
     def button_go_to_restock(self):
         main_app.screen_manager.transition.direction = 'left'
         main_app.screen_manager.current = 'ReStock Item'
+
 
 
 class DeliverItem(Screen):
@@ -369,7 +425,7 @@ class DeliverItem(Screen):
             # Encrypt and Send data
             data_package = DEncrypt.encrypt_to_json(data_package)
             response = requests.post(
-                'http://127.0.0.1:5000/items',
+                'http://127.0.0.1:5000/deliveritem',
                 json=data_package
             )
 
@@ -651,36 +707,146 @@ class ReStock(Screen):
         self.display_fields()
 
     def button_submit(self):
+        debug_MobileApp.info('Submit ReStock:')
         num = self.number_of_items.text
-        self.number_of_items.text = 'hel'
-        print(f'{self.entry_data = } [{num}]')
+        debug_MobileApp.info(f'\t{self.entry_data = } [x{num}]')
 
-        # Validate
+        # TODO: Data Validation for Storage.
 
-        # update database
+        try:
+            # if it can NOT be an INT... it's an ERROR! ^_^
+            num = int(num)
+
+        except Exception as err:
+            debug_MobileApp.error(f'\tNumber of Items, is NOT a Number!')
+            open_popup(
+                title="Input Error!",
+                icon='emoticon-sad',
+                text_1="Number of Items",
+                text_2='Must be a Number!',
+                text_3='From 1 to 9999'
+            )
+            return
+
+        try:
+            # Get data:
+            data_package = {
+                'user_id': DATA.db_data['user_id'],
+                'storage_source': self.entry_data['StorageS'],
+                'storage_restock': self.entry_data['StorageR'],
+                'item_id': self.entry_data['Items'],
+                'num': int(self.number_of_items.text),
+            }
+
+            # TODO: add check for 'Click to Select'... popup error blank field...
+
+            # Encrypt and Send data
+            data_package = DEncrypt.encrypt_to_json(data_package)
+            response = requests.post(
+                'http://127.0.0.1:5000/restock',
+                json=data_package
+            )
+
+            # decrypt response
+            db_data = response.json()
+            db_data = DEncrypt.decrypt_from_json(db_data)
+
+            # TODO: Review the popup... needs work
+            if db_data['status'] == 'True':
+
+                # Popup list:
+                self.dialog = MDDialog(
+                    title='Operation Status:',
+                    type="confirmation",
+                    items=[
+                        TwoLineAvatarIconListItem(
+                            IconLeftWidget(
+                                icon='emoticon-happy'
+                                # theme_icon_color="Custom",
+                                # icon_color=color
+                            ),
+                            IconRightWidget(
+                                icon='pen'
+                                # id=f"{server['Index']}",
+                                # on_release=self.delete_button
+                            ),
+                            text=f"Storage Restocked!",
+                            secondary_text=f'Stock Other Item?',
+                            # id=f"{entry[0]}",
+                            on_release=self.item_clicked
+                        )
+                    ],
+                    buttons=[
+                        MDFlatButton(
+                            text="Done",
+                            theme_text_color="Custom",
+                            # text_color=self.theme_cls.primary_color,
+                            id='done',
+                            on_release=lambda x: self.button_yes_no('done')
+                        ),
+                        MDFlatButton(
+                            text="New",
+                            theme_text_color="Custom",
+                            # text_color=self.theme_cls.primary_color,
+                            id='new',
+                            on_release=lambda x: self.button_yes_no('new')
+                        )
+                    ]
+                )
+                self.dialog.open()
+                debug_MobileApp.info('\tAll good')
+
+            elif db_data['status'] == 'False':
+                print(f'\tOperation Failed! {db_data['status'] = }')
+                debug_MobileApp.error('\tOperation Failed!')
+                open_popup(
+                    title="Operation Status:",
+                    icon='emoticon-sad',
+                    text_1="An Error Has Occurred!",
+                    text_2='Storage NOT Restocked!',
+                    text_3='Try again later...'
+                )
+            else:
+                print("Error... Opps..")
+                debug_MobileApp.error('\tOperation Failed! data error...')
+                open_popup(
+                    title="Operation Status:",
+                    icon='robot-confused',
+                    text_1="An Error Has Occurred!",
+                    text_2='data error...',
+                    text_3='Try again later...'
+                )
+
+        except Exception as err:
+            debug_MobileApp.error(f'\tError Restocking Storage: {err}')
+            open_popup(
+                title="Failed to Connect:",
+                icon='emoticon-sad',
+                text_1="ErrorRestocking item!",
+                text_2='Check Internet Connection',
+                text_3='Or Try Again Later'
+            )
 
 
     def button_plus(self):
-        print("plus")
         a = self.number_of_items.text
         try:
             a = int(a)
             a += 1
             self.number_of_items.text = str(a)
         except:
-            a = a + ' Numbers Only'
-            self.number_of_items.text = a
+            #a = a + ' Numbers Only'
+            self.number_of_items.text = '1'
 
     def button_minus(self):
-        print("minus")
         a = self.number_of_items.text
         try:
             a = int(a)
             a -= 1
             self.number_of_items.text = str(a)
         except:
-            a = str(a) + ' Numbers Only'
-            self.number_of_items.text = a
+            #a = str(a) + ' Numbers Only'
+            self.number_of_items.text = '1'
 
 
         #TODO: Note: for the 'search' list[tuples] -> list[dict] like {'blue pen': 1} Use dict.keys -> list[keys] and use 'FuzzyWuzzy' ^_^

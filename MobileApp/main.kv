@@ -20,7 +20,6 @@
                 text: "App Logo\nPlaceHolder\n; )"
                 color: (0,0,0,1)
 
-
             MDTextField:
                 size_hint_x: None
                 id: user_field
@@ -32,7 +31,6 @@
                 width: root.width*0.75 #"300dp"
                 pos_hint: {"center_y": .5}
                 pos_hint: {"center_x": .5}
-
 
             MDTextField:
                 size_hint_x: None
@@ -71,7 +69,10 @@
 
 
 <MainScreen>
-    container: container
+    container_notifications: container_notifications
+    container_storage: container_storage
+    container_restock_entries: container_restock_entries
+    container_delivery_entries: container_delivery_entries
 
     BoxLayout:
 	    cols: 1
@@ -87,32 +88,107 @@
             left_action_items:[["menu"], ["earth"]]
             right_action_items: [["account", lambda x: root.button_go_to_login_screen()], ["dice-d20-outline", lambda x: root.button_reload()]]
 
-        BoxLayout:
-            cols: 1
-            orientation: 'vertical'
-            size: root.width, root.height
-            padding: 2
-            spacing: "20dp"
+        MDBottomNavigation:
+            #panel_color: app.THEME_pri #"orange"
+            #selected_color_background: app.THEME_acc #'#0080ff' # '#2874ff'
+            #text_color_active: app.THEME_sec #(.1, .1 , .3, 1)
 
-            MDScrollView:
-                MDList:
-                    id: container
+            MDBottomNavigationItem:
+                name: 'screen 1'
+                text: 'Main Menu'
+                icon: 'notebook-edit'
+                #badge_icon: "numeric-1"
 
-            MDFloatingActionButton:
-                icon: "locker"
-                md_bg_color: app.theme_cls.primary_color
-                on_release:
-                    root.button_go_to_restock()
-                pos_hint: {"center_x": .9, "center_y": .1}
-                elevation: 1
+                BoxLayout:
+                    cols: 1
+                    orientation: 'vertical'
+                    size: root.width, root.height
+                    padding: 2
+                    spacing: "20dp"
 
-            MDFloatingActionButton:
-                icon: "account-arrow-left"
-                md_bg_color: app.theme_cls.primary_color
-                on_release:
-                    root.button_go_to_add_entry()
-                pos_hint: {"center_x": .9, "center_y": .1}
-                elevation: 1
+                    MDScrollView:
+                        MDList:
+                            id: container_notifications
+
+                    YourContainer:
+                        spacing: "15dp"
+                        padding: 10
+
+                        # Spacer to align left
+                        Label:
+                            text: ""
+                            color: (0,0,0,0)
+
+                        MDFloatingActionButton:
+                            icon: "locker"
+                            md_bg_color: app.theme_cls.primary_color
+                            on_release:
+                                root.button_go_to_restock()
+                            pos_hint: {"center_x": .9, "center_y": .1}
+                            elevation: 1
+
+                        MDFloatingActionButton:
+                            icon: "account-arrow-left"
+                            md_bg_color: app.theme_cls.primary_color
+                            on_release:
+                                root.button_go_to_add_entry()
+                            pos_hint: {"center_x": .9, "center_y": .1}
+                            elevation: 1
+
+            MDBottomNavigationItem:
+                name: 'screen 2'
+                text: 'Storage'
+                icon: 'locker'
+                #badge_icon: "numeric-1"
+
+                BoxLayout:
+                    cols: 1
+                    orientation: 'vertical'
+                    size: root.width, root.height
+                    padding: 2
+                    spacing: "20dp"
+
+                    MDScrollView:
+                        MDList:
+                            id: container_storage
+
+            MDBottomNavigationItem:
+                name: 'screen 3'
+                text: 'Stock Entries'
+                icon: 'import'
+                #badge_icon: "numeric-1"
+
+                BoxLayout:
+                    cols: 1
+                    orientation: 'vertical'
+                    size: root.width, root.height
+                    padding: 2
+                    spacing: "20dp"
+
+                    MDScrollView:
+                        MDList:
+                            id: container_restock_entries
+
+            MDBottomNavigationItem:
+                name: 'screen 4'
+                text: 'Delivery Entries'
+                icon: 'export'
+                #badge_icon: "notebook-edit-outline"
+
+                BoxLayout:
+                    cols: 1
+                    orientation: 'vertical'
+                    size: root.width, root.height
+                    padding: 2
+                    spacing: "20dp"
+
+                    MDScrollView:
+                        MDList:
+                            id: container_delivery_entries
+
+
+
+
 
 
 <DeliverItem>
@@ -223,7 +299,7 @@
                     width: root.width*0.60 #"300dp"
                     pos_hint: {"center_y": .5}
                     pos_hint: {"center_x": .3}
-                    max_text_length: 3
+                    max_text_length: 4
 
                 Label:
                     text: ""
