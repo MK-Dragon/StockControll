@@ -18,6 +18,7 @@ from kivymd.uix.list import IconLeftWidget, IconRightWidget
 from kivymd.uix.list import IRightBodyTouch
 from kivy.uix.popup import Popup
 from kivymd.uix.dialog import MDDialog
+from kivymd.uix.card import MDCard
 from kivymd.uix.relativelayout import MDRelativeLayout
 
 
@@ -479,8 +480,7 @@ class ReStock(Screen):
     label_storage_to_restock = StringProperty('')
     label_storage_source = StringProperty('')
     label_item = StringProperty('')
-    num_items = 0
-    label_num_items = StringProperty('')
+    number_of_items = ObjectProperty(None)
 
     dialog = None
 
@@ -497,6 +497,8 @@ class ReStock(Screen):
         self.label_item = 'Click to Select'
         self.num_items = 1
         self.label_num_items = str(self.num_items)
+
+        self.number_of_items.text = '1'
 
         self.entry_data = {
             'worker': None,
@@ -632,9 +634,37 @@ class ReStock(Screen):
         # refresh fields!
         self.display_fields()
 
+    def button_submit(self):
+        a = self.number_of_items.text
+        print(f'\n\nsubmit: {type(a) = }\n{a = }\n\n')
+        self.number_of_items.text = 'hel'
+
+    def button_plus(self):
+        print("plus")
+        a = self.number_of_items.text
+        try:
+            a = int(a)
+            a += 1
+            self.number_of_items.text = str(a)
+            print(f'{self.label_num_items = }')
+        except:
+            a = a + ' Numbers Only'
+            self.number_of_items.text = a
+
+    def button_minus(self):
+        print("minus")
+        a = self.number_of_items.text
+        try:
+            a = int(a)
+            a -= 1
+            self.number_of_items.text = str(a)
+            print(f'{self.label_num_items = }')
+        except:
+            a = a + ' Numbers Only'
+            self.number_of_items.text = a
 
 
-#TODO: Note: for the 'search' list[tuples] -> list[dict] like {'blue pen': 1} Use dict.keys -> list[keys] and use 'FuzzyWuzzy' ^_^
+        #TODO: Note: for the 'search' list[tuples] -> list[dict] like {'blue pen': 1} Use dict.keys -> list[keys] and use 'FuzzyWuzzy' ^_^
 
 
 
@@ -691,6 +721,10 @@ class YourContainer(IRightBodyTouch, MDBoxLayout):
 class PopupError(BoxLayout):
     pass
 
+class DiceCard(MDCard):
+    text = ObjectProperty(None)
+    dice_icon = ObjectProperty(None)
+    card_id = ObjectProperty(None)
 
 
 

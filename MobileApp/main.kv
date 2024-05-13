@@ -107,7 +107,7 @@
                 elevation: 1
 
             MDFloatingActionButton:
-                icon: "plus"
+                icon: "account-arrow-left"
                 md_bg_color: app.theme_cls.primary_color
                 on_release:
                     root.button_go_to_add_entry()
@@ -186,6 +186,7 @@
 
 <ReStock>
     container2: container2
+    number_of_items: number_of_items
 
     BoxLayout:
 	    orientation: 'vertical'
@@ -208,17 +209,37 @@
             MDList:
                 id: container2
 
-            MDTextField:
-                size_hint_x: None
-                id: user_field
-                hint_text: "Number of Items"
-                multiline: False
-                icon_left: "pen"
-                mode: "rectangle"
-                background_color: app.theme_cls.bg_normal
-                width: root.width*0.75 #"300dp"
-                pos_hint: {"center_y": .5}
-                pos_hint: {"center_x": .5}
+            BoxLayout:
+                size: root.width, root.height
+
+                MDTextField:
+                    size_hint_x: None
+                    id: number_of_items
+                    hint_text: "Number of Items"
+                    multiline: True
+                    icon_left: "sort-numeric-variant"
+                    mode: "rectangle"
+                    background_color: app.theme_cls.bg_normal
+                    width: root.width*0.60 #"300dp"
+                    pos_hint: {"center_y": .5}
+                    pos_hint: {"center_x": .3}
+                    max_text_length: 3
+
+                Label:
+                    text: ""
+                    color: (0,0,0,0)
+
+                MDIconButton:
+                    icon: "plus"
+                    on_release:
+                        root.button_plus()
+
+                MDIconButton:
+                    icon: "minus"
+                    on_release:
+                        root.button_minus()
+
+
 
         BoxLayout:
             orientation: 'vertical'
@@ -237,7 +258,7 @@
                 md_bg_color: app.theme_cls.primary_color
                 on_release:
                     root.button_submit()
-                pos_hint: {"center_x": .8, "center_y": .1}
+                pos_hint: {"center_x": .8, "center_y": .2}
                 elevation: 1
 
 
@@ -274,42 +295,3 @@
                 #id: container
 
 
-<DiceCard>
-    radius: (5, 5, 5, 5)
-    padding: 10
-    size_hint: (0.3), None
-    size: root.width, "100dp"
-    #md_bg_color: app.THEME_pri_light
-
-    MDRelativeLayout:
-        MDIconButton:
-            id: card_id
-            icon: "plus"
-            pos_hint: {"top": 1, "right": 1}
-            on_release:
-                app.main_window.plus_button(root.card_id)
-
-        MDIconButton:
-            icon: "minus"
-            pos_hint: {"bot": 1, "right": 1}
-            on_release:
-                app.main_window.minus_button(root.card_id)
-
-        MDIconButton:
-            icon: root.dice_icon #"dice-d20"
-            pos_hint: {"top": 1, "left": 1}
-            on_release:
-                app.main_window.icon_button(root.card_id)
-
-
-        MDTextField:
-                size_hint_x: None
-                id: user_field
-                hint_text: "Username"
-                multiline: False
-                icon_left: "account"
-                #mode: "rectangle"
-                background_color: app.theme_cls.bg_normal
-                width: root.width*0.75 #"300dp"
-                pos_hint: {"center_y": .5}
-                pos_hint: {"center_x": .5}
