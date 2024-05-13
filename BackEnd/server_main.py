@@ -139,22 +139,23 @@ def ReStock_posted():
 
 @app.route('/reload', methods=['GET'])
 def reload_data():
+    # TODO do Special read for users with only usernames! NO PASSWORDS!!!
     resp = {
         'worker': db.Read_Full_Table('colaboradores'),
         'storage': db.Read_Full_Table('armarios'),
         'items': db.Read_Full_Table('items'),
         'stock': db.Read_Full_Table('stock'),
         'restock': db.Complex_Read_Table(
-            table='stock',
+            table='restock',
             num_results=50,
             order_by='id',
-            order_desc=False
+            order_desc=True
         ),
         'delivered': db.Complex_Read_Table(
             table='entrega',
             num_results=50,
             order_by='id',
-            order_desc=False
+            order_desc=True
         )
     }
     resp = DEncrypt.encrypt_to_json(resp)

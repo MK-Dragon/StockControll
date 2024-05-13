@@ -130,6 +130,7 @@ class MainScreen(Screen):
     container_delivery_entries = ObjectProperty(None)
 
     def on_kv_post(self, base_widget):
+        print('\n * on_kv_post * \n')
         # Get data from server
         self.get_data_from_server()
 
@@ -180,16 +181,22 @@ class MainScreen(Screen):
 
     # Geting and Displaying data:
     def get_data_from_server(self):
+        print("Getting data:")
         debug_MobileApp.info('Gating data from Server')
         try:
             response = requests.get('http://127.0.0.1:5000/reload')
             data = response.json()
             data = DEncrypt.decrypt_from_json(data)
+            print(f'from server: {data}')
+            print(f'{data = }')
             if DATA.db_data == None:
+                print('\tif')
                 # Debug mode only
                 DATA.db_data = data
                 DATA.db_data.update({'user_id': '1'})
+                print('')
             else:
+                print('\telse')
                 # Normal mode:
                 DATA.db_data['worker'] = data['worker']
                 DATA.db_data['storage'] = data['storage']
@@ -199,14 +206,15 @@ class MainScreen(Screen):
                 DATA.db_data['delivered'] = data['delivered']
             debug_MobileApp.info('\t\tall good')
         except Exception as err:
+            print("\texcept")
             debug_MobileApp.error(f'Error Re/Loading Data from Server: {err}')
 
     def display_all(self):
         debug_MobileApp.info('\tLoading/Displaying All Containers:')
-        self.container_notifications()
-        self.container_storage()
-        self.container_restock_entries()
-        self.container_delivery_entries()
+        self.display_low_stock()
+        self.display_stock()
+        self.display_restock_entries()
+        self.display_delivery_entries()
 
     def display_low_stock(self):
         # TODO: ... coming soon... ish.......
@@ -217,7 +225,58 @@ class MainScreen(Screen):
         pass
 
     def display_restock_entries(self):
-        pass
+        debug_MobileApp.info('\t\tDisplaying: ReStock')
+        print('\n\nDisplay ReStock:')
+        print(f'{DATA.db_data['restock'] = }\n'
+              f'{type(DATA.db_data['restock']) = }')
+        for entry in DATA.db_data['restock']:
+            print(f'\t{entry = }')
+            user = ''
+            source = ''
+            restocked = ''
+            item = ''
+            num = entry[6]
+            date = entry[2]
+
+            # Get user data: # TODO do Special read for users with only usernames! NO PASSWORDS!!!
+            """for i in DATA.db_data['user']:
+                user = '(?)'
+                break"""
+
+            # Get Storage data:
+            for i in DATA.db_data['storage']:
+                # getting source
+                if entry[3] == i[0]:
+                    source = i[1]
+                    print(f'\t\t{source = }')
+                # getting restocked
+                if entry[4] == i[0]:
+                    restocked = i[1]
+                    print(f'\t\t{restocked = }')
+            if source == '':
+                source = '* Store'
+                print(f'\t\t{source = }')
+
+            # Get item info:
+            for i in DATA.db_data['items']:
+                if entry[5] == i[0]:
+                    item = i[1]
+                    print(f'\t\t{item = }')
+                    break
+
+            # Display it!
+            self.ids.container_restock_entries.add_widget(
+                ThreeLineAvatarListItem(
+                    IconLeftWidget(
+                        icon='pen'
+                    ),
+                    text=f'[{num}x] {item}',
+                    secondary_text=f'{user}: {source} -> {restocked}',
+                    tertiary_text=f'{date}',
+                    id=f'{entry[0]}'
+                    #on_release=self.item_clicked # TODO: Entries are read only (??)
+                )
+            )
 
     def display_delivery_entries(self):
         pass
@@ -226,6 +285,7 @@ class MainScreen(Screen):
     def button_reload(self):
         self.get_data_from_server()
         self.display_all()
+
 
 
     # Navigation:
