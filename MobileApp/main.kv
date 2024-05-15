@@ -85,13 +85,13 @@
             title: "Stock Control"
             elevation: 1
             #md_bg_color: app.THEME_pri #app.theme_cls.accent_color
-            left_action_items:[["menu"], ["earth"]]
-            right_action_items: [["account", lambda x: root.button_go_to_login_screen()], ["dice-d20-outline", lambda x: root.button_reload()]]
+            left_action_items:[["earth"]] #["menu"],
+            right_action_items: [["account", lambda x: root.button_go_to_login_screen()], ["reload", lambda x: root.button_reload()]]
 
         MDBottomNavigation:
-            #panel_color: app.THEME_pri #"orange"
-            #selected_color_background: app.THEME_acc #'#0080ff' # '#2874ff'
-            #text_color_active: app.THEME_sec #(.1, .1 , .3, 1)
+            #panel_color: app.theme_cls.primary_color #app.THEME_pri #"orange"
+            selected_color_background: '#b6c5cf' #app.theme_cls.primary_color #app.THEME_acc #'#0080ff' # '#2874ff'
+            text_color_active: app.theme_cls.primary_color #app.THEME_sec #(.1, .1 , .3, 1)
 
             MDBottomNavigationItem:
                 name: 'screen 1'
@@ -100,7 +100,6 @@
                 #badge_icon: "numeric-1"
 
                 BoxLayout:
-                    cols: 1
                     orientation: 'vertical'
                     size: root.width, root.height
                     padding: 2
@@ -119,21 +118,36 @@
                             text: ""
                             color: (0,0,0,0)
 
-                        MDFloatingActionButton:
+                        #MDFloatingActionButton:
+                        MDRectangleFlatIconButton:
                             icon: "locker"
+                            icon_color: 'white'
+                            text: "Restock"
+                            theme_text_color: "Custom"
+                            text_color: "white"
                             md_bg_color: app.theme_cls.primary_color
                             on_release:
                                 root.button_go_to_restock()
                             pos_hint: {"center_x": .9, "center_y": .1}
                             elevation: 1
 
-                        MDFloatingActionButton:
+                        #MDFloatingActionButton:
+                        MDRectangleFlatIconButton:
+                            text: 'Deliver Item'
+                            theme_text_color: "Custom"
+                            text_color: "white"
+                            icon_color: 'white'
                             icon: "account-arrow-left"
                             md_bg_color: app.theme_cls.primary_color
                             on_release:
                                 root.button_go_to_add_entry()
                             pos_hint: {"center_x": .9, "center_y": .1}
                             elevation: 1
+
+                        # Spacer to align left
+                        Label:
+                            text: ""
+                            color: (0,0,0,0)
 
             MDBottomNavigationItem:
                 name: 'screen 2'
@@ -142,11 +156,54 @@
                 #badge_icon: "numeric-1"
 
                 BoxLayout:
-                    cols: 1
                     orientation: 'vertical'
                     size: root.width, root.height
                     padding: 2
                     spacing: "20dp"
+
+                    Label:
+                        text: "Storage Stock"
+                        font_size: '20sp'
+                        color: 'blue' #(0,0,0,0)
+                        size_hint_y: 0.1
+
+                    # Sort by:
+                    BoxLayout:
+                        spacing: "15dp"
+                        padding: 10
+                        size_hint_y: 0.1
+
+                        # Spacer to align left
+                        Label:
+                            text: ""
+                            color: (0,0,0,0)
+
+                        MDRectangleFlatIconButton:
+                            icon: "pen"
+                            icon_color: 'white'
+                            text: "Sort by Item"
+                            theme_text_color: "Custom"
+                            text_color: "white"
+                            md_bg_color: '#b6c5cf' #app.theme_cls.primary_color
+                            on_release:
+                                root.button_go_to_restock()
+                            elevation: 1
+
+                        MDRectangleFlatIconButton:
+                            text: 'Sort by Storage'
+                            theme_text_color: "Custom"
+                            text_color: "white"
+                            icon_color: 'white'
+                            icon: "locker"
+                            md_bg_color: '#b6c5cf' #app.theme_cls.primary_color
+                            on_release:
+                                root.button_go_to_add_entry()
+                            elevation: 1
+
+                        # Spacer to align left
+                        Label:
+                            text: ""
+                            color: (0,0,0,0)
 
                     MDScrollView:
                         MDList:
@@ -154,16 +211,21 @@
 
             MDBottomNavigationItem:
                 name: 'screen 3'
-                text: 'Stock Entries'
+                text: 'Restock Entries'
                 icon: 'import'
                 #badge_icon: "numeric-1"
 
                 BoxLayout:
-                    cols: 1
                     orientation: 'vertical'
                     size: root.width, root.height
                     padding: 2
                     spacing: "20dp"
+
+                    Label:
+                        text: "Restock Entries"
+                        font_size: '20sp'
+                        color: 'blue' #(0,0,0,0)
+                        size_hint_y: 0.1
 
                     MDScrollView:
                         MDList:
@@ -181,6 +243,12 @@
                     size: root.width, root.height
                     padding: 2
                     spacing: "20dp"
+
+                    Label:
+                        text: "Delivery Entries"
+                        font_size: '20sp'
+                        color: 'blue' #(0,0,0,0)
+                        size_hint_y: 0.1
 
                     MDScrollView:
                         MDList:
@@ -256,6 +324,7 @@
                 md_bg_color: app.theme_cls.primary_color
                 on_release:
                     root.button_submit()
+                    app.main_screen.button_reload()
                 pos_hint: {"center_x": .8, "center_y": .1}
                 elevation: 1
 
@@ -334,6 +403,7 @@
                 md_bg_color: app.theme_cls.primary_color
                 on_release:
                     root.button_submit()
+                    app.main_screen.button_reload()
                 pos_hint: {"center_x": .8, "center_y": .2}
                 elevation: 1
 

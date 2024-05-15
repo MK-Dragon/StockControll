@@ -129,6 +129,8 @@ class MainScreen(Screen):
     container_restock_entries = ObjectProperty(None)
     container_delivery_entries = ObjectProperty(None)
 
+    sort_stock_by = 'item' # or 'storage'
+
     def on_kv_post(self, base_widget):
         print('\n * on_kv_post * \n')
         # Get data from server
@@ -139,8 +141,6 @@ class MainScreen(Screen):
 
 
 # TODO: Add Notifications for low stock + "shopping list"
-
-
 
 
     def button(self):
@@ -177,6 +177,7 @@ class MainScreen(Screen):
         print(response)
         for i in response.json():
             print(f'\t{i}')
+
 
 
     # Geting and Displaying data:
@@ -222,9 +223,51 @@ class MainScreen(Screen):
 
     def display_stock(self):
         # TODO:... ui/ux on the way...
-        pass
+        # Clear container
+        self.ids.container_storage.clear_widgets(children=None)
+
+        debug_MobileApp.info('\t\tDisplaying: Stock')
+        for entry in DATA.db_data['stock']:
+            print(f'\t{entry = }')
+            item = ''
+            storage = ''
+
+            num = entry[2]
+            min = entry[3]
+            max = entry[4]
+
+            # Get Storage data:
+            for i in DATA.db_data['storage']:
+                # getting storage
+                if entry[1] == i[0]:
+                    storage = i[1]
+                    print(f'\t\t{storage = }')
+
+            # Get item info:
+            for i in DATA.db_data['items']:
+                if entry[0] == i[0]:
+                    item = i[1]
+                    print(f'\t\t{item = }')
+                    break
+
+            # Display it!
+            self.ids.container_storage.add_widget(
+                ThreeLineAvatarListItem(
+                    IconLeftWidget(
+                        icon='pen'
+                    ),
+                    text=f'{item}',
+                    secondary_text=f'{storage}',
+                    tertiary_text=f'min [{min}] / Max [{max}]',
+                    id=f'{entry[0]}'
+                    #on_release=self.item_clicked # TODO: Entries are read only (??)
+                )
+            )
 
     def display_restock_entries(self):
+        # Clear container
+        self.ids.container_restock_entries.clear_widgets(children=None)
+
         debug_MobileApp.info('\t\tDisplaying: ReStock')
         print('\n\nDisplay ReStock:')
         print(f'{DATA.db_data['restock'] = }\n'
@@ -242,6 +285,7 @@ class MainScreen(Screen):
             """for i in DATA.db_data['user']:
                 user = '(?)'
                 break"""
+            user = '(?)'
 
             # Get Storage data:
             for i in DATA.db_data['storage']:
@@ -268,7 +312,7 @@ class MainScreen(Screen):
             self.ids.container_restock_entries.add_widget(
                 ThreeLineAvatarListItem(
                     IconLeftWidget(
-                        icon='pen'
+                        icon='cube-send'
                     ),
                     text=f'[{num}x] {item}',
                     secondary_text=f'{user}: {source} -> {restocked}',
@@ -279,7 +323,67 @@ class MainScreen(Screen):
             )
 
     def display_delivery_entries(self):
-        pass
+        # Clear container
+        self.ids.container_delivery_entries.clear_widgets(children=None)
+
+        debug_MobileApp.info('\t\tDisplaying: Delivered')
+        print('\n\nDisplay Delivered:')
+        print(f'{DATA.db_data['delivered'] = }\n'
+              f'{type(DATA.db_data['delivered']) = }')
+        for entry in DATA.db_data['delivered']:
+            print(f'\t{entry = }')
+            user = ''
+            storage = ''
+            worker = ''
+            item = ''
+            num = entry[5]
+            date = entry[1]
+
+            # Get user data: # TODO do Special read for users with only usernames! NO PASSWORDS!!!
+            """for i in DATA.db_data['user']:
+                user = '(?)'
+                break"""
+            user = '(?)'
+
+            # Get Storage data:
+            for i in DATA.db_data['storage']:
+                # getting storage
+                if entry[6] == i[0]:
+                    storage = i[1]
+                    print(f'\t\t{storage = }')
+                    break
+            if storage == '':
+                storage = '* Store'
+                print(f'\t\t{storage = }')
+
+            # Get Worker:
+            for i in DATA.db_data['worker']:
+                # getting worker
+                if entry[3] == i[0]:
+                    worker = i[1]
+                    print(f'\t\t{worker = }')
+                    break
+
+            # Get item info:
+            for i in DATA.db_data['items']:
+                if entry[4] == i[0]:
+                    item = i[1]
+                    print(f'\t\t{item = }')
+                    break
+
+            # Display it!
+            self.ids.container_delivery_entries.add_widget(
+                ThreeLineAvatarListItem(
+                    IconLeftWidget(
+                        icon='pen'
+                    ),
+                    text=f'[{num}x] {item}',
+                    secondary_text=f'{user}: {storage} -> {worker}',
+                    tertiary_text=f'{date}',
+                    id=f'{entry[0]}'
+                    # on_release=self.item_clicked # TODO: Entries are read only (??)
+                )
+            )
 
 
     def button_reload(self):
@@ -887,6 +991,16 @@ class ReStock(Screen):
                 text_3='Or Try Again Later'
             )
 
+    def button_yes_no(self, val:str):
+        if val == 'new':
+            self.reset_fields()
+            self.dialog.dismiss()
+            self.display_fields()
+        elif val == 'done':
+            self.reset_fields()
+            self.dialog.dismiss()
+            main_app.screen_manager.transition.direction = 'right'
+            main_app.screen_manager.current = 'Main Screen'
 
     def button_plus(self):
         a = self.number_of_items.text
@@ -997,14 +1111,14 @@ class Main(MDApp):
         self.screen_manager.add_widget(screen)
 
         # Adding Entries:
-        self.main_screen = DeliverItem()
+        self.deliver_item_screen = DeliverItem()
         screen = Screen(name='Deliver Item')
-        screen.add_widget(self.main_screen)
+        screen.add_widget(self.deliver_item_screen)
         self.screen_manager.add_widget(screen)
 
-        self.main_screen = ReStock()
+        self.restock_screen = ReStock()
         screen = Screen(name='ReStock Item')
-        screen.add_widget(self.main_screen)
+        screen.add_widget(self.restock_screen)
         self.screen_manager.add_widget(screen)
 
 
