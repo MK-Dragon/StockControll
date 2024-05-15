@@ -66,7 +66,7 @@ class LoginScreen(Screen):
     pw_field = ObjectProperty(None)
     url_field = ObjectProperty(None)
 
-    def on_kv_post(self, base_widget):
+    def on_enter(self, base_widget):
         # TODO: Check config file for username and server IP.
         self.url_field.text = DATA.connection_ip
 
@@ -143,8 +143,8 @@ class MainScreen(Screen):
 
     sort_stock_by = 'item' # or 'storage'
 
-    def on_kv_post(self, base_widget):
-        print('\n * on_kv_post * \n')
+    def on_enter(self, base_widget):
+        print('\n * on_enter * \n')
         # Get data from server
         self.get_data_from_server()
 
@@ -285,8 +285,8 @@ class MainScreen(Screen):
 
         debug_MobileApp.info('\t\tDisplaying: ReStock')
         print('\n\nDisplay ReStock:')
-        print(f'{DATA.db_data['restock'] = }\n'
-              f'{type(DATA.db_data['restock']) = }')
+        print(f"{DATA.db_data['restock'] = }\n"
+              f"{type(DATA.db_data['restock']) = }")
         for entry in DATA.db_data['restock']:
             print(f'\t{entry = }')
             user = ''
@@ -343,8 +343,8 @@ class MainScreen(Screen):
 
         debug_MobileApp.info('\t\tDisplaying: Delivered')
         print('\n\nDisplay Delivered:')
-        print(f'{DATA.db_data['delivered'] = }\n'
-              f'{type(DATA.db_data['delivered']) = }')
+        print(f"{DATA.db_data['delivered'] = }\n"
+              f"{type(DATA.db_data['delivered']) = }")
         for entry in DATA.db_data['delivered']:
             print(f'\t{entry = }')
             user = ''
@@ -433,7 +433,7 @@ class DeliverItem(Screen):
 
     entry_data:dict = {}
 
-    def on_kv_post(self, base_widget):
+    def on_enter(self, base_widget):
         self.reset_fields()
         self.display_fields()
 
@@ -724,7 +724,7 @@ class ReStock(Screen):
     entry_key = ''
     data_key = ''
 
-    def on_kv_post(self, base_widget):
+    def on_enter(self, base_widget):
         self.reset_fields()
         self.display_fields()
 
@@ -978,7 +978,7 @@ class ReStock(Screen):
                 debug_MobileApp.info('\tAll good')
 
             elif db_data['status'] == 'False':
-                print(f'\tOperation Failed! {db_data['status'] = }')
+                print(f"\tOperation Failed! {db_data['status'] = }")
                 debug_MobileApp.error('\tOperation Failed!')
                 open_popup(
                     title="Operation Status:",
@@ -1115,16 +1115,15 @@ class Main(MDApp):
         # Screen Management:
         self.screen_manager = ScreenManager()
 
+        # First Screen -> LOGIN!!! ^_^
+        self.login_screen = LoginScreen()
+        screen = Screen(name='Login Screen')
+        screen.add_widget(self.login_screen)
+        self.screen_manager.add_widget(screen)
 
         self.main_screen = MainScreen()
         screen = Screen(name='Main Screen')
         screen.add_widget(self.main_screen)
-        self.screen_manager.add_widget(screen)
-
-
-        self.login_screen = LoginScreen()
-        screen = Screen(name='Login Screen')
-        screen.add_widget(self.login_screen)
         self.screen_manager.add_widget(screen)
 
         # Adding Entries:
