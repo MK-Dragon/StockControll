@@ -66,7 +66,7 @@ class LoginScreen(Screen):
     pw_field = ObjectProperty(None)
     url_field = ObjectProperty(None)
 
-    def on_enter(self, base_widget):
+    def on_kv_post(self, base_widget):
         # TODO: Check config file for username and server IP.
         self.url_field.text = DATA.connection_ip
 
@@ -143,8 +143,8 @@ class MainScreen(Screen):
 
     sort_stock_by = 'item' # or 'storage'
 
-    def on_enter(self, base_widget):
-        print('\n * on_enter * \n')
+    def on_kv_post(self, base_widget):
+        print('\n * on_kv_post * \n')
         # Get data from server
         self.get_data_from_server()
 
@@ -433,7 +433,7 @@ class DeliverItem(Screen):
 
     entry_data:dict = {}
 
-    def on_enter(self, base_widget):
+    def on_kv_post(self, base_widget):
         self.reset_fields()
         self.display_fields()
 
@@ -724,7 +724,7 @@ class ReStock(Screen):
     entry_key = ''
     data_key = ''
 
-    def on_enter(self, base_widget):
+    def on_kv_post(self, base_widget):
         self.reset_fields()
         self.display_fields()
 
