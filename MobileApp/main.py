@@ -31,6 +31,7 @@ import logging
 class DataBase_Data:
     db_data: dict = None
     popup_data = None
+    connection_ip:str = 'http://127.0.0.1:5000'
 
     def load_popup_data(self, data):
         self.popup_data = data
@@ -63,12 +64,22 @@ debug_MobileApp.info('---//---')
 class LoginScreen(Screen):
     user_field = ObjectProperty(None)
     pw_field = ObjectProperty(None)
+    url_field = ObjectProperty(None)
+
+    def on_kv_post(self, base_widget):
+        # TODO: Check config file for username and server IP.
+        self.url_field.text = DATA.connection_ip
 
     def button_login(self):
         debug_MobileApp.info(f'Login:')
         # Get user and password
         user = self.user_field.text
         password = self.pw_field.text
+
+        if DATA.connection_ip != self.url_field.text:
+            DATA.connection_ip = self.url_field.text
+            debug_MobileApp.info(f'Changeing Server IP to: {DATA.connection_ip}')
+            print(f'Changeing Server IP to: {DATA.connection_ip}')
 
         # try connection
         try:
@@ -80,8 +91,9 @@ class LoginScreen(Screen):
             # Encrypt data
             login_info = DEncrypt.encrypt_to_json(login_info)
 
+            addr = f'{DATA.connection_ip}/login'
             response = requests.get(
-                'http://127.0.0.1:5000/login',
+                addr,
                 json=login_info
             )
 
@@ -146,7 +158,8 @@ class MainScreen(Screen):
     def button(self):
         print("Duck Test")
         try:
-            response = requests.get('http://127.0.0.1:5000/items')
+            addr = f'{DATA.connection_ip}/items'
+            response = requests.get(addr)
             print(response)
             for i in response.json():
                 print(f'\t{i}')
@@ -173,7 +186,8 @@ class MainScreen(Screen):
         id = instance.id
         debug_MobileApp.info(f'id[{id}]')
         print(f"id[{id}]")
-        response = requests.get('http://127.0.0.1:5000/item/info', json={'id': id})
+        addr = f'{DATA.connection_ip}/item/info'
+        response = requests.get(addr, json={'id': id})
         print(response)
         for i in response.json():
             print(f'\t{i}')
@@ -185,7 +199,8 @@ class MainScreen(Screen):
         print("Getting data:")
         debug_MobileApp.info('Gating data from Server')
         try:
-            response = requests.get('http://127.0.0.1:5000/reload')
+            addr = f'{DATA.connection_ip}/reload'
+            response = requests.get(addr)
             data = response.json()
             data = DEncrypt.decrypt_from_json(data)
             print(f'from server: {data}')
@@ -588,8 +603,9 @@ class DeliverItem(Screen):
 
             # Encrypt and Send data
             data_package = DEncrypt.encrypt_to_json(data_package)
+            addr = f'{DATA.connection_ip}/deliveritem'
             response = requests.post(
-                'http://127.0.0.1:5000/deliveritem',
+                addr,
                 json=data_package
             )
 
@@ -906,8 +922,9 @@ class ReStock(Screen):
 
             # Encrypt and Send data
             data_package = DEncrypt.encrypt_to_json(data_package)
+            addr = f'{DATA.connection_ip}/restock'
             response = requests.post(
-                'http://127.0.0.1:5000/restock',
+                addr,
                 json=data_package
             )
 

@@ -2,6 +2,7 @@
     container: container
     user_field: user_field
     pw_field: pw_field
+    url_field: url_field
 
     BoxLayout:
 	    orientation: 'vertical'
@@ -19,6 +20,19 @@
             Label:
                 text: "App Logo\nPlaceHolder\n; )"
                 color: (0,0,0,1)
+
+            # TODO: Needs some UI / UX changes for Final product!!
+            MDTextField:
+                size_hint_x: None
+                id: url_field
+                hint_text: "Server URL"
+                multiline: False
+                icon_left: "server-network"
+                mode: "rectangle"
+                background_color: app.theme_cls.bg_normal
+                width: root.width*0.75 #"300dp"
+                pos_hint: {"center_y": .5}
+                pos_hint: {"center_x": .5}
 
             MDTextField:
                 size_hint_x: None
