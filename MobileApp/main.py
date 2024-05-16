@@ -68,6 +68,7 @@ class LoginScreen(Screen):
 
     def on_kv_post(self, base_widget):
         # TODO: Check config file for username and server IP.
+        print("Enter Login Screen")
         self.url_field.text = DATA.connection_ip
 
     def button_login(self):
@@ -110,6 +111,7 @@ class LoginScreen(Screen):
                 # Go to Main Screen
                 main_app.screen_manager.transition.direction = 'up'
                 main_app.screen_manager.current = 'Main Screen'
+                main_app.main_screen.on_pre_enter(5)
 
             elif db_data['login'] == False:
                 # TODO: Add limit to wrong password
@@ -143,8 +145,8 @@ class MainScreen(Screen):
 
     sort_stock_by = 'item' # or 'storage'
 
-    def on_kv_post(self, base_widget):
-        print('\n * on_kv_post * \n')
+    def on_pre_enter(self, base_widget):
+        print('\n * on_pre_enter Main Screen * \n')
         # Get data from server
         self.get_data_from_server()
 
@@ -154,7 +156,7 @@ class MainScreen(Screen):
 
 # TODO: Add Notifications for low stock + "shopping list"
 
-
+# deprecate...
     def button(self):
         print("Duck Test")
         try:
@@ -182,6 +184,7 @@ class MainScreen(Screen):
                 text_3='Or Try Again Later'
             )
 
+    # deprecate...
     def item_clicked(self, instance):
         id = instance.id
         debug_MobileApp.info(f'id[{id}]')
@@ -411,14 +414,17 @@ class MainScreen(Screen):
     def button_go_to_add_entry(self):
         main_app.screen_manager.transition.direction = 'left'
         main_app.screen_manager.current = 'Deliver Item'
+        main_app.deliver_item_screen.on_pre_enter(5)
 
     def button_go_to_login_screen(self):
         main_app.screen_manager.transition.direction = 'down'
         main_app.screen_manager.current = 'Login Screen'
+        main_app.login_screen.on_kv_post(5)
 
     def button_go_to_restock(self):
         main_app.screen_manager.transition.direction = 'left'
         main_app.screen_manager.current = 'ReStock Item'
+        main_app.restock_screen.on_pre_enter(5)
 
 
 
@@ -433,7 +439,8 @@ class DeliverItem(Screen):
 
     entry_data:dict = {}
 
-    def on_kv_post(self, base_widget):
+    def on_pre_enter(self, base_widget):
+        print("Enter Deliver Item Screen")
         self.reset_fields()
         self.display_fields()
 
@@ -724,7 +731,7 @@ class ReStock(Screen):
     entry_key = ''
     data_key = ''
 
-    def on_kv_post(self, base_widget):
+    def on_pre_enter(self, base_widget):
         self.reset_fields()
         self.display_fields()
 
@@ -1143,6 +1150,6 @@ class Main(MDApp):
 
 
 if __name__ == '__main__':
-    Window.size = (405, 700)  #TODO: Remove before py --> apk / it bugs the mobile App...
+    #Window.size = (405, 700)  #TODO: Remove before py --> apk / it bugs the mobile App...
     main_app = Main()
     main_app.run()
