@@ -12,8 +12,9 @@ from kivymd.uix.boxlayout import MDBoxLayout
 from kivy.uix.boxlayout import BoxLayout
 # Buttons & Labels:
 from kivymd.uix.list import TwoLineAvatarIconListItem, OneLineAvatarIconListItem, ThreeLineAvatarListItem
-from kivymd.uix.button import MDFlatButton
+from kivymd.uix.button import MDFlatButton, MDRoundFlatButton, MDRoundFlatIconButton
 from kivymd.uix.list import IconLeftWidget, IconRightWidget
+from kivymd.uix.expansionpanel import MDExpansionPanel, MDExpansionPanelThreeLine
 # Other Parts:
 from kivymd.uix.list import IRightBodyTouch
 from kivy.uix.popup import Popup
@@ -68,7 +69,7 @@ class LoginScreen(Screen):
 
     def on_kv_post(self, base_widget):
         # TODO: Check config file for username and server IP.
-        print("Enter Login Screen")
+        print("kv_post Login Screen")
         self.url_field.text = DATA.connection_ip
 
     def button_login(self):
@@ -144,6 +145,7 @@ class MainScreen(Screen):
     container_delivery_entries = ObjectProperty(None)
 
     sort_stock_by = 'item' # or 'storage'
+    show_stock: dict = {}
 
     def on_pre_enter(self, base_widget):
         print('\n * on_pre_enter Main Screen * \n')
@@ -154,10 +156,10 @@ class MainScreen(Screen):
         self.display_all()
 
 
-# TODO: Add Notifications for low stock + "shopping list"
+    # TODO: Add Notifications for low stock + "shopping list"
 
-# deprecate...
-    def button(self):
+    # deprecate...
+    '''def button(self):
         print("Duck Test")
         try:
             addr = f'{DATA.connection_ip}/items'
@@ -182,18 +184,18 @@ class MainScreen(Screen):
                 text_1="No Connection!",
                 text_2='Check Internet Connection',
                 text_3='Or Try Again Later'
-            )
+            )'''
 
     # deprecate...
-    def item_clicked(self, instance):
+    '''def item_clicked(self, instance):
         id = instance.id
         debug_MobileApp.info(f'id[{id}]')
-        print(f"id[{id}]")
+        #print(f"id[{id}]")
         addr = f'{DATA.connection_ip}/item/info'
         response = requests.get(addr, json={'id': id})
-        print(response)
+        # print(response)
         for i in response.json():
-            print(f'\t{i}')
+            print(f'\t{i}')'''
 
 
 
@@ -201,19 +203,22 @@ class MainScreen(Screen):
     def get_data_from_server(self):
         print("Getting data:")
         debug_MobileApp.info('Gating data from Server')
+
         try:
+            # reset values:
+            self.show_stock = {}
+
+            # Get data:
             addr = f'{DATA.connection_ip}/reload'
             response = requests.get(addr)
             data = response.json()
             data = DEncrypt.decrypt_from_json(data)
             print(f'from server: {data}')
-            print(f'{data = }')
             if DATA.db_data == None:
-                print('\tif')
+                print('\tif None')
                 # Debug mode only
                 DATA.db_data = data
                 DATA.db_data.update({'user_id': '1'})
-                print('')
             else:
                 print('\telse')
                 # Normal mode:
@@ -223,6 +228,9 @@ class MainScreen(Screen):
                 DATA.db_data['stock'] = data['stock']
                 DATA.db_data['restock'] = data['restock']
                 DATA.db_data['delivered'] = data['delivered']
+            # set up show/hide Storage Stock
+            for i in DATA.db_data['storage']:
+                self.show_stock.update({i[1]: True})
             debug_MobileApp.info('\t\tall good')
         except Exception as err:
             print("\texcept")
@@ -231,7 +239,8 @@ class MainScreen(Screen):
     def display_all(self):
         debug_MobileApp.info('\tLoading/Displaying All Containers:')
         self.display_low_stock()
-        self.display_stock()
+        #self.display_stock()
+        self.display_stock_by_storage()
         self.display_restock_entries()
         self.display_delivery_entries()
 
@@ -246,7 +255,7 @@ class MainScreen(Screen):
 
         debug_MobileApp.info('\t\tDisplaying: Stock')
         for entry in DATA.db_data['stock']:
-            print(f'\t{entry = }')
+            #print(f'\t{entry = }')
             item = ''
             storage = ''
 
@@ -259,13 +268,13 @@ class MainScreen(Screen):
                 # getting storage
                 if entry[1] == i[0]:
                     storage = i[1]
-                    print(f'\t\t{storage = }')
+                    #print(f'\t\t{storage = }')
 
             # Get item info:
             for i in DATA.db_data['items']:
                 if entry[0] == i[0]:
                     item = i[1]
-                    print(f'\t\t{item = }')
+                    #print(f'\t\t{item = }')
                     break
 
             # Display it!
@@ -275,12 +284,94 @@ class MainScreen(Screen):
                         icon='pen'
                     ),
                     text=f'{item}',
-                    secondary_text=f'{storage}',
+                    secondary_text=f'{storage}: {num} units',
                     tertiary_text=f'min [{min}] / Max [{max}]',
                     id=f'{entry[0]}'
                     #on_release=self.item_clicked # TODO: Entries are read only (??)
                 )
             )
+
+
+    # test KivyMD expand panel
+    def display_stock_by_storage(self):
+        print('\n\nSorting:')
+
+        # Clear container
+        self.ids.container_storage.clear_widgets(children=None)
+        sorting_box:dict = {}
+
+        for i in DATA.db_data['storage']:
+            # i[1] -> Name aka storage
+            name = str(i[1])
+            a:list = []
+            sorting_box.update({name: a})
+        print(f'\t{sorting_box = }')
+
+        debug_MobileApp.info('\t\tDisplaying: Stock by Storage')
+
+        print(f'\tSorting:')
+        for entry in DATA.db_data['stock']:
+            #print(f'\t{entry = }')
+            item = ''
+            storage = ''
+
+            # ids -> names/values:
+            num = entry[2]
+            min = entry[3]
+            max = entry[4]
+            # Get Storage data:
+            for i in DATA.db_data['storage']:
+                # getting storage
+                if entry[1] == i[0]:
+                    storage = i[1]
+                    #print(f'\t\t{storage = }')
+                    break
+            # Get item info:
+            for i in DATA.db_data['items']:
+                if entry[0] == i[0]:
+                    item = i[1]
+                    #print(f'\t\t{item = }')
+                    break
+
+            # put in Sorting_box:
+            a = ThreeLineAvatarListItem(
+                    IconLeftWidget(
+                        icon='pen'
+                    ),
+                    text=f'{item} [{num}] units',
+                    secondary_text=f'{storage}: {num} units',
+                    tertiary_text=f'min [{min}] / Max [{max}]',
+                    id=f'{entry[0]}'
+                    #on_release=self.item_clicked # TODO: Entries are read only (??)
+                )
+            sorting_box[str(storage)].append(a)
+
+        print(f'{self.show_stock = }')
+
+        # display Storage: divider + Stock:
+        for s in DATA.db_data['storage']:
+            print(f'{s[1] = }')
+            divider = MDRoundFlatIconButton(
+                text=f" ___ {s[1]} ___",
+                icon='chevron-up' if self.show_stock[s[1]] else 'chevron-down',
+                id=f'{s[1]}',
+                on_release=self.button_divider,
+                font_size='16sp',
+                text_color='blue', #dark blue / (0.6, 0, 0, 1),  # red
+                line_color='#b6c5cf', # dark blue / (0.6, 0, 0, 1),  # red
+                md_bg_color=(0.7, 0.7, 0.9, 0.2)  # light red
+            )
+            self.ids.container_storage.add_widget(
+                divider
+            )
+            if self.show_stock[s[1]]:
+                for i in sorting_box[s[1]]:
+                    self.ids.container_storage.add_widget(
+                        i
+                    )
+
+
+
 
     def display_restock_entries(self):
         # Clear container
@@ -288,10 +379,10 @@ class MainScreen(Screen):
 
         debug_MobileApp.info('\t\tDisplaying: ReStock')
         print('\n\nDisplay ReStock:')
-        print(f"{DATA.db_data['restock'] = }\n"
-              f"{type(DATA.db_data['restock']) = }")
+        #print(f"{DATA.db_data['restock'] = }\n"
+              #f"{type(DATA.db_data['restock']) = }")
         for entry in DATA.db_data['restock']:
-            print(f'\t{entry = }')
+            #print(f'\t{entry = }')
             user = ''
             source = ''
             restocked = ''
@@ -310,20 +401,20 @@ class MainScreen(Screen):
                 # getting source
                 if entry[3] == i[0]:
                     source = i[1]
-                    print(f'\t\t{source = }')
+                    #print(f'\t\t{source = }')
                 # getting restocked
                 if entry[4] == i[0]:
                     restocked = i[1]
-                    print(f'\t\t{restocked = }')
+                    #print(f'\t\t{restocked = }')
             if source == '':
                 source = '* Store'
-                print(f'\t\t{source = }')
+                #print(f'\t\t{source = }')
 
             # Get item info:
             for i in DATA.db_data['items']:
                 if entry[5] == i[0]:
                     item = i[1]
-                    print(f'\t\t{item = }')
+                    #print(f'\t\t{item = }')
                     break
 
             # Display it!
@@ -346,10 +437,10 @@ class MainScreen(Screen):
 
         debug_MobileApp.info('\t\tDisplaying: Delivered')
         print('\n\nDisplay Delivered:')
-        print(f"{DATA.db_data['delivered'] = }\n"
-              f"{type(DATA.db_data['delivered']) = }")
+        #print(f"{DATA.db_data['delivered'] = }\n"
+              #f"{type(DATA.db_data['delivered']) = }")
         for entry in DATA.db_data['delivered']:
-            print(f'\t{entry = }')
+            #print(f'\t{entry = }')
             user = ''
             storage = ''
             worker = ''
@@ -368,25 +459,25 @@ class MainScreen(Screen):
                 # getting storage
                 if entry[6] == i[0]:
                     storage = i[1]
-                    print(f'\t\t{storage = }')
+                    #print(f'\t\t{storage = }')
                     break
             if storage == '':
                 storage = '* Store'
-                print(f'\t\t{storage = }')
+                #print(f'\t\t{storage = }')
 
             # Get Worker:
             for i in DATA.db_data['worker']:
                 # getting worker
                 if entry[3] == i[0]:
                     worker = i[1]
-                    print(f'\t\t{worker = }')
+                    #print(f'\t\t{worker = }')
                     break
 
             # Get item info:
             for i in DATA.db_data['items']:
                 if entry[4] == i[0]:
                     item = i[1]
-                    print(f'\t\t{item = }')
+                    #print(f'\t\t{item = }')
                     break
 
             # Display it!
@@ -408,7 +499,10 @@ class MainScreen(Screen):
         self.get_data_from_server()
         self.display_all()
 
-
+    def button_divider(self, instance):
+        self.show_stock[instance.id] = not self.show_stock[instance.id]
+        print(f'\nshow {instance.id = }\n')
+        self.display_stock_by_storage()
 
     # Navigation:
     def button_go_to_add_entry(self):
@@ -558,8 +652,8 @@ class DeliverItem(Screen):
 
         print(f'\n\nitem_clicked: {id = }')
 
-        print(f'\t{DATA.popup_data = }')
-        print(f'\t{DATA.db_data[DATA.popup_data] = }')
+        #print(f'\t{DATA.popup_data = }')
+        #print(f'\t{DATA.db_data[DATA.popup_data] = }')
 
         # update label
         if DATA.popup_data == 'worker':
@@ -575,13 +669,13 @@ class DeliverItem(Screen):
                     break
 
         elif DATA.popup_data == 'items':
-            print(f'for loop:')
+            #print(f'for loop:')
             for i in DATA.db_data[DATA.popup_data]:
                 if str(i[0]) == id:
                     self.label_item = i[1]
                     break
 
-        print(f'\n{self.entry_data = }')
+        #print(f'\n{self.entry_data = }')
 
         # desmiss popup:
         self.dialog.dismiss()
@@ -707,16 +801,16 @@ class DeliverItem(Screen):
 
 
     def button_plus(self):
-        print("plus")
+        #print("plus")
         self.num_items += 1
         self.label_num_items = str(self.num_items)
-        print(f'{self.label_num_items = }')
+        #print(f'{self.label_num_items = }')
 
     def button_minus(self):
-        print("minus")
+        #print("minus")
         self.num_items -= 1
         self.label_num_items = str(self.num_items)
-        print(f'{self.label_num_items = }')
+        #print(f'{self.label_num_items = }')
 
 
 class ReStock(Screen):
@@ -803,7 +897,7 @@ class ReStock(Screen):
     def select_item(self, instance):
         # Get Index of Server Clicked:
         field = instance.id
-        print(f'select_item {field}]')
+        #print(f'select_item {field}]')
 
         # set entry key:
         self.entry_key = field
@@ -863,8 +957,8 @@ class ReStock(Screen):
 
         print(f'\n\nitem_clicked: {id = }')
 
-        print(f'\t{self.data_key = }')
-        print(f'\t{DATA.db_data[self.data_key] = }')
+        #print(f'\t{self.data_key = }')
+        #print(f'\t{DATA.db_data[self.data_key] = }')
 
         # update label
         if self.entry_key == 'StorageS':
@@ -880,13 +974,13 @@ class ReStock(Screen):
                     break
 
         elif self.data_key == 'items':
-            print(f'for loop:')
+            #print(f'for loop:')
             for i in DATA.db_data[self.data_key]:
                 if str(i[0]) == id:
                     self.label_item = i[1]
                     break
 
-        print(f'\n{self.entry_data = }')
+        #print(f'\n{self.entry_data = }')
 
         # desmiss popup:
         self.dialog.dismiss()
@@ -1104,10 +1198,19 @@ class YourContainer(IRightBodyTouch, MDBoxLayout):
 class PopupError(BoxLayout):
     pass
 
+#deprecated ??
 class DiceCard(MDCard):
     text = ObjectProperty(None)
     dice_icon = ObjectProperty(None)
     card_id = ObjectProperty(None)
+
+#deprecated ??
+class ExpandContent(MDBoxLayout):
+    #item_id = ObjectProperty(None)
+    icon_label = ObjectProperty(None)
+    text_label = ObjectProperty(None)
+    text2_label = ObjectProperty(None)
+
 
 
 

@@ -122,6 +122,7 @@
                     MDScrollView:
                         MDList:
                             id: container_notifications
+                            adaptive_height: True
 
                     YourContainer:
                         spacing: "15dp"
@@ -221,7 +222,9 @@
 
                     MDScrollView:
                         MDList:
+                            adaptive_height: True
                             id: container_storage
+                            spacing: "10dp"
 
             MDBottomNavigationItem:
                 name: 'screen 3'
@@ -454,4 +457,15 @@
             #MDList:
                 #id: container
 
+# deprecated ??
+<ExpandContent>
+    #id: root.item_id
+    adaptive_height: True
+
+    TwoLineIconListItem:
+        text: root.text_label
+        secondary_text: root.text2_label
+
+    IconLeftWidget:
+        icon: root.icon_label
 
