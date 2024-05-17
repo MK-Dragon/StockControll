@@ -1054,10 +1054,12 @@ class ReStock(Screen):
         if self.entry_data['StorageS'] == None:
             stock_entry_source = True
 
-        if not stock_entry_source and not stock_entry_restock:
-            print(f'\t** No Stock Entry! **\n'
-                  f'\t\t{stock_entry_source = }\n'
-                  f'\t\t{stock_entry_restock = }')
+        if not stock_entry_source or not stock_entry_restock:
+            print(f'\t** No Stock Entry! **\n')
+            if not stock_entry_source:
+                print(f'\t\t{stock_entry_source = }\n')
+            if not stock_entry_restock:
+                print(f'\t\t{stock_entry_restock = }')
             return
 
         try:
