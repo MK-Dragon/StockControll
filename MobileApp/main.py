@@ -248,7 +248,8 @@ class MainScreen(Screen):
         # TODO: ... coming soon... ish.......
         pass
 
-    def display_stock(self):
+    # deprecated
+    """def display_stock(self):
         # TODO:... ui/ux on the way...
         # Clear container
         self.ids.container_storage.clear_widgets(children=None)
@@ -289,11 +290,11 @@ class MainScreen(Screen):
                     id=f'{entry[0]}'
                     #on_release=self.item_clicked # TODO: Entries are read only (??)
                 )
-            )
+            )"""
 
 
-    # test KivyMD expand panel
     def display_stock_by_storage(self):
+        # TODO: add option to create first_stocks_ from here
         print('\n\nSorting:')
 
         # Clear container
@@ -370,10 +371,8 @@ class MainScreen(Screen):
                         i
                     )
 
-
-
-
     def display_restock_entries(self):
+        # TODO: !! Add check if STOCK (item + storage) exists! if NOT create first Stock! aka ask for min max
         # Clear container
         self.ids.container_restock_entries.clear_widgets(children=None)
 
@@ -432,6 +431,7 @@ class MainScreen(Screen):
             )
 
     def display_delivery_entries(self):
+        # TODO: !! Add check if STOCK (item + storage) exists! if NOT create first Stock! goto Retock!
         # Clear container
         self.ids.container_delivery_entries.clear_widgets(children=None)
 
@@ -493,7 +493,7 @@ class MainScreen(Screen):
                     # on_release=self.item_clicked # TODO: Entries are read only (??)
                 )
             )
-
+# TODO: Add PopUp asking for Min Max if no stock
 
     def button_reload(self):
         self.get_data_from_server()
@@ -519,6 +519,11 @@ class MainScreen(Screen):
         main_app.screen_manager.transition.direction = 'left'
         main_app.screen_manager.current = 'ReStock Item'
         main_app.restock_screen.on_pre_enter(5)
+
+    def button_go_to_test(self):
+        print("Going to test Manu!")
+        main_app.screen_manager.transition.direction = 'left'
+        main_app.screen_manager.current = 'Add Item'
 
 
 
@@ -913,6 +918,27 @@ class ReStock(Screen):
 
         items = [] # append items ^_^
 
+        # Append "Store" to Source
+        if field == 'StorageS':
+            items.append(
+                TwoLineAvatarIconListItem(
+                    IconLeftWidget(
+                        icon='duck'
+                        # theme_icon_color="Custom",
+                        # icon_color=color
+                    ),
+                    IconRightWidget(
+                        icon='duck'
+                        # id=f"{server['Index']}",
+                        # on_release=self.delete_button
+                    ),
+                    text=f"Store",
+                    secondary_text=f'Item Just Purchased',
+                    id=f"None",
+                    on_release=self.item_clicked
+                )
+            )
+
         for entry in DATA.db_data[self.data_key]:
             items.append(
                 TwoLineAvatarIconListItem(
@@ -962,10 +988,14 @@ class ReStock(Screen):
 
         # update label
         if self.entry_key == 'StorageS':
-            for i in DATA.db_data['storage']:
-                if str(i[0]) == id:
-                    self.label_storage_to_restock = i[1]
-                    break
+            if id == 'None':
+                self.label_storage_to_restock = 'Store'
+                self.entry_data[self.entry_key] = None
+            else:
+                for i in DATA.db_data['storage']:
+                    if str(i[0]) == id:
+                        self.label_storage_to_restock = i[1]
+                        break
 
         elif self.entry_key == 'StorageR':
             for i in DATA.db_data['storage']:
@@ -1005,8 +1035,29 @@ class ReStock(Screen):
                 icon='emoticon-sad',
                 text_1="Number of Items",
                 text_2='Must be a Number!',
-                text_3='From 1 to 9999'
+                text_3='From 1 to 999'
             )
+            return
+
+        # Validate Stock Entry: source = item + storage && restock = item + storage
+        stock_entry_source:bool = False
+        stock_entry_restock: bool = False
+        for entry in DATA.db_data['stock']:
+            # source = item + storage:
+            if entry[0] == self.entry_data['Items'] and entry[1] == self.entry_data['StorageS']:
+                stock_entry_source = True
+            # restock = item + storage:
+            if entry[0] == self.entry_data['Items'] and entry[1] == self.entry_data['StorageR']:
+                stock_entry_restock = True
+
+        # if source is Store: Skip! - there is no Store Stock! ^_^
+        if self.entry_data['StorageS'] == None:
+            stock_entry_source = True
+
+        if not stock_entry_source and not stock_entry_restock:
+            print(f'\t** No Stock Entry! **\n'
+                  f'\t\t{stock_entry_source = }\n'
+                  f'\t\t{stock_entry_restock = }')
             return
 
         try:
@@ -1144,6 +1195,165 @@ class ReStock(Screen):
         #TODO: Note: for the 'search' list[tuples] -> list[dict] like {'blue pen': 1} Use dict.keys -> list[keys] and use 'FuzzyWuzzy' ^_^
 
 
+class AddItem(Screen):
+    name_items = ObjectProperty(None)
+    desc_item = ObjectProperty(None)
+    dialog = None
+
+    def button_submit(self):
+        debug_MobileApp.info('Ading Item')
+        print('Ading Item:')
+
+        item_name = self.name_items.text
+        item_desc = self.desc_item.text
+
+        print(f'Char {len(item_name)}/100 - {len(item_desc)}/250')
+
+        # Validation
+        if len(item_name) > 100:
+            print('\tPopup Name to long!')
+            return
+
+        if len(item_desc) > 250:
+            print('\tPopup Description to long!')
+            return
+
+        if len(item_name) < 5:
+            print('\tPopup Name to Short!')
+            return
+
+        try:
+            # Get data:
+            data_package = {
+                'user_id': "1", #DATA.db_data['user_id'],
+                'item_name': item_name,
+                'item_desc': item_desc
+            }
+
+            # TODO: add check for 'Click to Select'... popup error blank field...
+
+            # Encrypt and Send data
+            data_package = DEncrypt.encrypt_to_json(data_package)
+            addr = f'{DATA.connection_ip}/additem'
+            response = requests.post(
+                addr,
+                json=data_package
+            )
+
+            # decrypt response
+            db_data = response.json()
+            db_data = DEncrypt.decrypt_from_json(db_data)
+
+            # TODO: Review the popup... needs work
+            if db_data['status'] == 'True':
+
+                # Popup list:
+                self.dialog = MDDialog(
+                    title='Operation Status:',
+                    type="confirmation",
+                    items=[
+                        TwoLineAvatarIconListItem(
+                            IconLeftWidget(
+                                icon='emoticon-happy'
+                                # theme_icon_color="Custom",
+                                # icon_color=color
+                            ),
+                            IconRightWidget(
+                                icon='pen'
+                                # id=f"{server['Index']}",
+                                # on_release=self.delete_button
+                            ),
+                            text=f"Item Added Successfully!",
+                            secondary_text=f'Add Other Items?',
+                            # id=f"{entry[0]}",
+                            #on_release=self.item_clicked
+                        )
+                    ],
+                    buttons=[
+                        MDFlatButton(
+                            text="Done",
+                            theme_text_color="Custom",
+                            # text_color=self.theme_cls.primary_color,
+                            id='done',
+                            on_release=lambda x: self.button_yes_no('done')
+                        ),
+                        MDFlatButton(
+                            text="New",
+                            theme_text_color="Custom",
+                            # text_color=self.theme_cls.primary_color,
+                            id='new',
+                            on_release=lambda x: self.button_yes_no('new')
+                        )
+                    ]
+                )
+                self.dialog.open()
+                debug_MobileApp.info('\tAll good')
+
+            elif db_data['status'] == 'False':
+                print(f"\tOperation Failed! {db_data['status'] = }")
+                debug_MobileApp.error('\tOperation Failed!')
+                open_popup(
+                    title="Operation Status:",
+                    icon='emoticon-sad',
+                    text_1="An Error Has Occurred!",
+                    text_2='Item NOT Added!',
+                    text_3='Try again later...'
+                )
+            else:
+                print("Error... Opps..")
+                debug_MobileApp.error('\tOperation Failed! data error...')
+                open_popup(
+                    title="Operation Status:",
+                    icon='robot-confused',
+                    text_1="An Error Has Occurred!",
+                    text_2='data error...',
+                    text_3='Try again later...'
+                )
+
+        except Exception as err:
+            debug_MobileApp.error(f'\tError Restocking Storage: {err}')
+            open_popup(
+                title="Failed to Connect:",
+                icon='emoticon-sad',
+                text_1="ErrorRestocking item!",
+                text_2='Check Internet Connection',
+                text_3='Or Try Again Later'
+            )
+
+    def button_yes_no(self, val:str):
+        if val == 'new':
+            self.reset_fields()
+            self.dialog.dismiss()
+            #self.display_fields()
+        elif val == 'done':
+            self.reset_fields()
+            self.dialog.dismiss()
+            main_app.screen_manager.transition.direction = 'right'
+            main_app.screen_manager.current = 'Main Screen'
+
+    def reset_fields(self):
+        # TODO: reset doesn't clean the fields... love bugs... -.-
+        self.name_items.text = ''
+        self.desc_item.text = ''
+
+    def button_cancel(self):
+        # Reset all
+        self.reset_fields()
+        # Go back to main screen
+        main_app.screen_manager.transition.direction = 'right'
+        main_app.screen_manager.current = 'Main Screen'
+
+
+class AddStorage():
+    pass
+
+class AddWorker():
+    pass
+
+class AddUser():
+    pass
+
+
 
 # Helper Funtions:
 def open_popup(title:str, text_1:str, text_2:str='', text_3:str='', icon:str='alert'):
@@ -1198,6 +1408,8 @@ class YourContainer(IRightBodyTouch, MDBoxLayout):
 class PopupError(BoxLayout):
     pass
 
+
+
 #deprecated ??
 class DiceCard(MDCard):
     text = ObjectProperty(None)
@@ -1225,6 +1437,11 @@ class Main(MDApp):
         # Screen Management:
         self.screen_manager = ScreenManager()
 
+
+
+
+
+
         # First Screen -> LOGIN!!! ^_^
         self.login_screen = LoginScreen()
         screen = Screen(name='Login Screen')
@@ -1246,6 +1463,13 @@ class Main(MDApp):
         screen = Screen(name='ReStock Item')
         screen.add_widget(self.restock_screen)
         self.screen_manager.add_widget(screen)
+
+        # Add AddItem
+        self.additem_screen = AddItem()
+        screen = Screen(name='Add Item')
+        screen.add_widget(self.additem_screen)
+        self.screen_manager.add_widget(screen)
+
 
 
 

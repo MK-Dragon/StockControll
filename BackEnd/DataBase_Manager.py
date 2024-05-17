@@ -670,6 +670,7 @@ if __name__ == '__main__':
     CreateDB()
 
     # Add test Users
+    Add_User('Admin', '123')
     Add_User('Marco', '12345')
     Add_User('Polo', '54321')
 

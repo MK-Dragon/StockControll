@@ -99,7 +99,7 @@
             title: "Stock Control"
             elevation: 1
             #md_bg_color: app.THEME_pri #app.theme_cls.accent_color
-            left_action_items:[["earth"]] #["menu"],
+            left_action_items:[['duck', lambda x: root.button_go_to_test()],["earth"]] #["menu"],
             right_action_items: [["account", lambda x: root.button_go_to_login_screen()], ["reload", lambda x: root.button_reload()]]
 
         MDBottomNavigation:
@@ -164,6 +164,7 @@
                             text: ""
                             color: (0,0,0,0)
 
+
             MDBottomNavigationItem:
                 name: 'screen 2'
                 text: 'Storage'
@@ -183,42 +184,42 @@
                         size_hint_y: 0.1
 
                     # Sort by:
-                    BoxLayout:
-                        spacing: "15dp"
-                        padding: 10
-                        size_hint_y: 0.1
+                    #BoxLayout:
+                        #spacing: "15dp"
+                        #padding: 10
+                        #size_hint_y: 0.1
 
                         # Spacer to align left
-                        Label:
-                            text: ""
-                            color: (0,0,0,0)
+                        #Label:
+                            #text: ""
+                            #color: (0,0,0,0)
 
-                        MDRectangleFlatIconButton:
-                            icon: "pen"
-                            icon_color: 'white'
-                            text: "Sort by Item"
-                            theme_text_color: "Custom"
-                            text_color: "white"
-                            md_bg_color: '#b6c5cf' #app.theme_cls.primary_color
-                            on_release:
-                                root.button_go_to_restock()
-                            elevation: 1
+                        #MDRectangleFlatIconButton:
+                            #icon: "pen"
+                            #icon_color: 'white'
+                            #text: "Sort by Item"
+                            #theme_text_color: "Custom"
+                            #text_color: "white"
+                            #md_bg_color: '#b6c5cf' #app.theme_cls.primary_color
+                            #on_release:
+                                #root.button_go_to_restock()
+                            #elevation: 1
 
-                        MDRectangleFlatIconButton:
-                            text: 'Sort by Storage'
-                            theme_text_color: "Custom"
-                            text_color: "white"
-                            icon_color: 'white'
-                            icon: "locker"
-                            md_bg_color: '#b6c5cf' #app.theme_cls.primary_color
-                            on_release:
-                                root.button_go_to_add_entry()
-                            elevation: 1
+                        #MDRectangleFlatIconButton:
+                            #text: 'Sort by Storage'
+                            #theme_text_color: "Custom"
+                            #text_color: "white"
+                            #icon_color: 'white'
+                            #icon: "locker"
+                            #md_bg_color: '#b6c5cf' #app.theme_cls.primary_color
+                            #on_release:
+                                #root.button_go_to_add_entry()
+                            #elevation: 1
 
                         # Spacer to align left
-                        Label:
-                            text: ""
-                            color: (0,0,0,0)
+                        #Label:
+                            #text: ""
+                            #color: (0,0,0,0)
 
                     MDScrollView:
                         MDList:
@@ -401,6 +402,92 @@
                     on_release:
                         root.button_minus()
 
+
+
+        BoxLayout:
+            orientation: 'vertical'
+            size: root.width, root.height
+            padding: 2
+
+            MDRectangleFlatIconButton:
+                text: "Submit"
+                font_size: "20sp"
+                theme_text_color: "Custom"
+                text_color: "white"
+                #line_color: "black"
+                theme_icon_color: "Custom"
+                icon_color: "white"
+                icon: "duck"
+                md_bg_color: app.theme_cls.primary_color
+                on_release:
+                    root.button_submit()
+                    app.main_screen.button_reload()
+                pos_hint: {"center_x": .8, "center_y": .2}
+                elevation: 1
+
+
+# Add Items, Storage, User and Workers
+
+<AddItem>
+    name_items: name_items
+    desc_item: desc_item
+
+
+    BoxLayout:
+	    orientation: 'vertical'
+        size: root.width, root.height
+        padding: 2
+
+        MDTopAppBar:
+            id: reload_btn_icon
+            title: "Deliver Item"
+            elevation: 1
+            #md_bg_color: app.THEME_pri #app.theme_cls.accent_color
+            left_action_items: [["arrow-left-bold-circle-outline", lambda x: root.button_cancel()]]
+            #right_action_items: [["dice-d20-outline", lambda x: root.button_reload()]]
+
+        BoxLayout:
+            orientation: 'vertical'
+            size: root.width, root.height
+            padding: 4
+            spacing: "30dp"
+            adaptive_height: False
+
+            Label:
+                text: ""
+                color: (0,0,0,1)
+
+            MDTextField:
+                size_hint_x: None
+                id: name_items
+                hint_text: "Item Name"
+                multiline: False
+                max_text_length:100
+                icon_left: "pen"
+                mode: "rectangle"
+                background_color: app.theme_cls.bg_normal
+                width: root.width*0.75 #"300dp"
+                pos_hint: {"center_y": .5}
+                pos_hint: {"center_x": .5}
+
+            Label:
+                text: ""
+                color: (0,0,0,1)
+
+            MDTextField:
+                size_hint_x: None
+                id: desc_item
+                hint_text: " Item Description"
+                multiline: True
+                max_text_length:250
+                max_height: root.height*0.25
+                icon_left: "notebook"
+                mode: "rectangle"
+                background_color: app.theme_cls.bg_normal
+                width: root.width*0.75 #"300dp"
+                height: root.height*0.25
+                pos_hint: {"center_y": .5}
+                pos_hint: {"center_x": .5}
 
 
         BoxLayout:

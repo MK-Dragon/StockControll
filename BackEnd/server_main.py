@@ -38,7 +38,7 @@ def login():
         user_info = DEncrypt.decrypt_from_json(user_info)
 
         # Log user_info...(?)
-        debug_flask_server.info(f'\t{user_info}')
+        debug_flask_server.info(f'\t{user_info["user"]}')
 
         login_info = db.Validate_Login(user=user_info['user'], password=user_info['password'])
 
@@ -69,12 +69,12 @@ def login():
 
 @app.route('/deliveritem', methods=['POST'])
 def DeliverItem_posted():
-    print('/DeliverItem -> posted')
+    debug_flask_server.info('/DeliverItem -> posted')
     try:
         # Get & decrypt data
         entry_data = request.get_json()
         entry_data = DEncrypt.decrypt_from_json(entry_data)
-        debug_flask_server.info(f'Decrypted: {entry_data}')
+        debug_flask_server.info(f'\tDecrypted: {entry_data}')
 
         # Save data do DataBase
         status = db.Deliver_Item(
@@ -90,10 +90,12 @@ def DeliverItem_posted():
             resp = {
                 'status': 'True'
             }
+            debug_flask_server.info('\tSuccessfully Saved')
         else:
             resp = {
                 'status': 'False'
             }
+            debug_flask_server.error(f'\tFailed to save to DataBase')
         # Encrypt and Send
         resp = DEncrypt.encrypt_to_json(resp)
         return jsonify(resp)
@@ -102,12 +104,12 @@ def DeliverItem_posted():
 
 @app.route('/restock', methods=['POST'])
 def ReStock_posted():
-    print('/ReStock -> posted')
+    debug_flask_server.info('/ReStock -> posted')
     try:
         # Get & decrypt data
         entry_data = request.get_json()
         entry_data = DEncrypt.decrypt_from_json(entry_data)
-        debug_flask_server.info(f'Decrypted: {entry_data}')
+        debug_flask_server.info(f'\tDecrypted: {entry_data}')
 
         # Save data do DataBase
         status = db.ReStock(
@@ -123,16 +125,237 @@ def ReStock_posted():
             resp = {
                 'status': 'True'
             }
+            debug_flask_server.info('\tSuccessfully Saved')
         else:
             resp = {
                 'status': 'False'
             }
+            debug_flask_server.error(f'\tFailed to save to DataBase')
         # Encrypt and Send
         resp = DEncrypt.encrypt_to_json(resp)
         return jsonify(resp)
     except Exception as err:
         debug_flask_server.error(f'Error: {err}')
 
+
+# Add Item, Storage, Workers and Users
+
+@app.route('/additem', methods=['POST'])
+def add_item():
+    # TODO: needs testing
+    debug_flask_server.info('/Adding Item -> posted')
+    try:
+        # Get & decrypt data
+        entry_data = request.get_json()
+        entry_data = DEncrypt.decrypt_from_json(entry_data)
+        debug_flask_server.info(f'\tDecrypted: {entry_data}')
+
+        # Save data do DataBase
+        status_item = db.Add_Item(
+            item_name=entry_data['item_name'],
+            description=entry_data['item_desc']
+        )
+
+        # response:
+        if status_item:
+            resp = {
+                'status': 'True'
+            }
+            debug_flask_server.info('\tSuccessfully Saved')
+        else:
+            resp = {
+                'status': 'False'
+            }
+            debug_flask_server.error(f'\tFailed to save to DataBase')
+        # Encrypt and Send
+        resp = DEncrypt.encrypt_to_json(resp)
+        return jsonify(resp)
+    except Exception as err:
+        debug_flask_server.error(f'Error: {err}')
+
+@app.route('/addstorage', methods=['POST'])
+def add_storage():
+    #TODO: needs testing
+    debug_flask_server.info('/Adding Storage -> posted')
+    try:
+        # Get & decrypt data
+        entry_data = request.get_json()
+        entry_data = DEncrypt.decrypt_from_json(entry_data)
+        debug_flask_server.info(f'\tDecrypted: {entry_data}')
+
+        # Save data do DataBase
+        status_item = db.Add_Storage(
+            name=entry_data[''],
+            location=entry_data['']
+        )
+
+        # response:
+        if status_item:
+            resp = {
+                'status': 'True'
+            }
+            debug_flask_server.info('\tSuccessfully Saved')
+        else:
+            resp = {
+                'status': 'False'
+            }
+            debug_flask_server.error(f'\tFailed to save to DataBase')
+        # Encrypt and Send
+        resp = DEncrypt.encrypt_to_json(resp)
+        return jsonify(resp)
+    except Exception as err:
+        debug_flask_server.error(f'Error: {err}')
+
+@app.route('/addworker', methods=['POST'])
+def add_worker():
+    #TODO: needs testing
+    debug_flask_server.info('/Adding Worker -> posted')
+    try:
+        # Get & decrypt data
+        entry_data = request.get_json()
+        entry_data = DEncrypt.decrypt_from_json(entry_data)
+        debug_flask_server.info(f'\tDecrypted: {entry_data}')
+
+        # Save data do DataBase
+        status_item = db.Add_Worker(
+            name=entry_data[''],
+            number=entry_data['']
+        )
+
+        # response:
+        if status_item:
+            resp = {
+                'status': 'True'
+            }
+            debug_flask_server.info('\tSuccessfully Saved')
+        else:
+            resp = {
+                'status': 'False'
+            }
+            debug_flask_server.error(f'\tFailed to save to DataBase')
+        # Encrypt and Send
+        resp = DEncrypt.encrypt_to_json(resp)
+        return jsonify(resp)
+    except Exception as err:
+        debug_flask_server.error(f'Error: {err}')
+
+@app.route('/adduser', methods=['POST'])
+def add_user():
+    #TODO: needs testing
+    debug_flask_server.info('/Adding User -> posted')
+    try:
+        # Get & decrypt data
+        entry_data = request.get_json()
+        entry_data = DEncrypt.decrypt_from_json(entry_data)
+        debug_flask_server.info(f'\tDecrypted: {entry_data}')
+
+        # Save data do DataBase
+        status_item = db.Add_User(
+            username=entry_data[''],
+            password=entry_data['']
+        )
+
+        # response:
+        if status_item:
+            resp = {
+                'status': 'True'
+            }
+            debug_flask_server.info('\tSuccessfully Saved')
+        else:
+            resp = {
+                'status': 'False'
+            }
+            debug_flask_server.error(f'\tFailed to save to DataBase')
+        # Encrypt and Send
+        resp = DEncrypt.encrypt_to_json(resp)
+        return jsonify(resp)
+    except Exception as err:
+        debug_flask_server.error(f'Error: {err}')
+
+# + First Stock
+@app.route('/addfirstrestock', methods=['POST'])
+def add_first_restock():
+    #TODO: needs testing
+    debug_flask_server.info('/Adding First Restock -> posted')
+    try:
+        # Get & decrypt data
+        entry_data = request.get_json()
+        entry_data = DEncrypt.decrypt_from_json(entry_data)
+        debug_flask_server.info(f'\tDecrypted: {entry_data}')
+
+        # Save data do DataBase
+        status_f_stock = db.Add_First_Stock_Entry(
+            storage_id=entry_data[''],
+            item_id=entry_data[''],
+            unit_min=entry_data[''],
+            unit_max=entry_data['']
+        )
+        status_restock = db.ReStock(
+            user=entry_data[''],
+            storage_source_id=entry_data[''],
+            storage_restocked_id=entry_data[''],
+            item_id=entry_data[''],
+            units=entry_data['']
+        )
+
+
+        # response:
+        if status_f_stock and status_restock:
+            resp = {
+                'status': 'True'
+            }
+            debug_flask_server.info('\tSuccessfully Saved')
+        else:
+            resp = {
+                'status': 'False'
+            }
+            debug_flask_server.error(f'\tFailed to save to DataBase: {status_f_stock = } and {status_restock = }')
+        # Encrypt and Send
+        resp = DEncrypt.encrypt_to_json(resp)
+        return jsonify(resp)
+    except Exception as err:
+        debug_flask_server.error(f'Error: {err}')
+
+@app.route('/addfirstdeliveritem', methods=['POST'])
+def add_first_deliver_item():
+    debug_flask_server.info('/DeliverItem -> posted')
+    try:
+        # Get & decrypt data
+        entry_data = request.get_json()
+        entry_data = DEncrypt.decrypt_from_json(entry_data)
+        debug_flask_server.info(f'\tDecrypted: {entry_data}')
+
+        # Save data do DataBase
+        status_f_stock = db.Add_First_Stock_Entry(
+            storage_id=entry_data[''],
+            item_id=entry_data[''],
+            unit_min=entry_data[''],
+            unit_max=entry_data['']
+        )
+        status = db.Deliver_Item(
+            user_id=entry_data['user_id'],
+            worker_id=entry_data['worker_id'],
+            item_id=entry_data['item_id'],
+            num= -entry_data['num'],
+            storage_id=entry_data['storage_id']
+        )
+
+        # response:
+        if status:
+            resp = {
+                'status': 'True'
+            }
+            debug_flask_server.info('\tSuccessfully Saved')
+        else:
+            resp = {
+                'status': 'False'
+            }
+            debug_flask_server.error(f'\tFailed to save to DataBase')
+        # Encrypt and Send
+        resp = DEncrypt.encrypt_to_json(resp)
+        return jsonify(resp)
+    except Exception as err:
+        debug_flask_server.error(f'Error: {err}')
 
 
 # Get Information:
@@ -161,7 +384,13 @@ def reload_data():
     resp = DEncrypt.encrypt_to_json(resp)
     return resp
 
-@app.route('/delivereditem', methods=['GET'])
+
+
+# ?? Remove or Edit ??
+
+
+# Not in use...
+"""@app.route('/delivereditem', methods=['GET'])
 def get_delivered_items_data():
     resp = {
         'delivered': db.Complex_Read_Table(
@@ -198,14 +427,11 @@ def get_stock_data():
         )
     }
     resp = DEncrypt.encrypt_to_json(resp)
-    return resp
+    return resp"""
 
 
-
-
-# ?? Remove or Edit ??
-
-@app.route('/items', methods=['GET'])
+# Deprecated???
+"""@app.route('/items', methods=['GET'])
 def get_employees():
     data = db.Read_Full_Table('items')
     debug_flask_server.info('/items response:')
@@ -223,7 +449,7 @@ def my_test_endpoint():
         debug_flask_server.info(f'\t{input_json}')
         return db.Get_Stock_Data(item_id=input_json['id'])
     except:
-        debug_flask_server.error('\tNo JSON Item Received')
+        debug_flask_server.error('\tNo JSON Item Received')"""
 
 
 
