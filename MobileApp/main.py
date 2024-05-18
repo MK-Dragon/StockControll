@@ -15,6 +15,8 @@ from kivymd.uix.list import TwoLineAvatarIconListItem, OneLineAvatarIconListItem
 from kivymd.uix.button import MDFlatButton, MDRoundFlatButton, MDRoundFlatIconButton
 from kivymd.uix.list import IconLeftWidget, IconRightWidget
 from kivymd.uix.expansionpanel import MDExpansionPanel, MDExpansionPanelThreeLine
+from kivymd.uix.textfield import MDTextField
+from kivy.uix.label import Label
 # Other Parts:
 from kivymd.uix.list import IRightBodyTouch
 from kivy.uix.popup import Popup
@@ -135,7 +137,6 @@ class LoginScreen(Screen):
                 text_2='Check Internet Connection',
                 text_3='Or Try Again Later'
             )
-
 
 
 class MainScreen(Screen):
@@ -530,8 +531,19 @@ class MainScreen(Screen):
         main_app.screen_manager.transition.direction = 'left'
         main_app.screen_manager.current = 'Add Storage'
 
+    def button_go_to_add_worker(self):
+        print("Going to Add Worker!")
+        main_app.screen_manager.transition.direction = 'left'
+        main_app.screen_manager.current = 'Add Worker'
+
+    """def button_go_to_add_user(self):
+        print("Going to Add User!")
+        main_app.screen_manager.transition.direction = 'left'
+        main_app.screen_manager.current = 'Add Storage'"""
 
 
+
+# Adding Entries
 class DeliverItem(Screen):
     label_storage = StringProperty('')
     label_item = StringProperty('')
@@ -702,6 +714,7 @@ class DeliverItem(Screen):
         main_app.screen_manager.current = 'Main Screen'
 
     def button_submit(self):
+        debug_MobileApp.info('Submitting Delivery Item')
         try:
             # Get data:
             data_package = {
@@ -711,6 +724,7 @@ class DeliverItem(Screen):
                 'num': int(self.number_of_items.text),
                 'storage_id': self.entry_data['storage']
             }
+            debug_MobileApp.info(f'\t{data_package = }')
 
             #TODO: add check for 'Click to Select'... popup error blank field...
 
@@ -725,6 +739,8 @@ class DeliverItem(Screen):
             # decrypt response
             db_data = response.json()
             db_data = DEncrypt.decrypt_from_json(db_data)
+
+            debug_MobileApp.info(f'\tresponce{db_data['status'] = }')
 
             # TODO: Review the popup... needs work
             if db_data['status'] == 'True':
@@ -1048,7 +1064,7 @@ class ReStock(Screen):
                 icon='emoticon-sad',
                 text_1="Number of Items",
                 text_2='Must be a Number!',
-                text_3='From 1 to 999'
+                text_3='From 1 to 9999'
             )
             return
 
@@ -1057,22 +1073,66 @@ class ReStock(Screen):
         stock_entry_restock: bool = False
         for entry in DATA.db_data['stock']:
             # source = item + storage:
-            if entry[0] == self.entry_data['Items'] and entry[1] == self.entry_data['StorageS']:
+            if str(entry[0]) == self.entry_data['Items'] and str(entry[1]) == self.entry_data['StorageS']:
                 stock_entry_source = True
             # restock = item + storage:
-            if entry[0] == self.entry_data['Items'] and entry[1] == self.entry_data['StorageR']:
+            if str(entry[0]) == self.entry_data['Items'] and str(entry[1]) == self.entry_data['StorageR']:
                 stock_entry_restock = True
 
         # if source is Store: Skip! - there is no Store Stock! ^_^
         if self.entry_data['StorageS'] == None:
             stock_entry_source = True
 
+        # if the is no Stock Entry ask to make one!
         if not stock_entry_source or not stock_entry_restock:
-            print(f'\t** No Stock Entry! **\n')
+            print(f'\n\t** No Stock Entry! **')
             if not stock_entry_source:
-                print(f'\t\t{stock_entry_source = }\n')
+                print(f'\t\t{stock_entry_source = }')
+                DATA.popup_data = {
+                    'source': 'ReStock Item',
+                    'item': self.entry_data['Items'],
+                    'storage': self.entry_data['StorageS']
+                }
             if not stock_entry_restock:
-                print(f'\t\t{stock_entry_restock = }')
+                print(f'\t\t{stock_entry_source = }')
+                DATA.popup_data = {
+                    'source': 'ReStock Item',
+                    'item': self.entry_data['Items'],
+                    'storage': self.entry_data['StorageR']
+                }
+            # Popup to ask:
+            self.dialog = MDDialog(
+                title='No Stock Entry:',
+                type="confirmation",
+                items=[
+                    TwoLineAvatarIconListItem(
+                        IconLeftWidget(
+                            icon='notebook-plus'
+                            # theme_icon_color="Custom",
+                            # icon_color=color
+                        ),
+                        text=f"Create Stock Entry?",
+                        secondary_text=f'Storage + Item'
+                    )
+                ],
+                buttons=[
+                    MDFlatButton(
+                        text="Cancel",
+                        theme_text_color="Custom",
+                        # text_color=self.theme_cls.primary_color,
+                        id='cancel',
+                        on_release=lambda x: self.button_addstock_cancel('cancel')
+                    ),
+                    MDFlatButton(
+                        text="New",
+                        theme_text_color="Custom",
+                        # text_color=self.theme_cls.primary_color,
+                        id='new',
+                        on_release=lambda x: self.button_addstock_cancel('new')
+                    )
+                ]
+            )
+            self.dialog.open()
             return
 
         try:
@@ -1084,6 +1144,7 @@ class ReStock(Screen):
                 'item_id': self.entry_data['Items'],
                 'num': int(self.number_of_items.text),
             }
+            debug_MobileApp.info(f'\t{data_package = }')
 
             # TODO: add check for 'Click to Select'... popup error blank field...
 
@@ -1098,6 +1159,8 @@ class ReStock(Screen):
             # decrypt response
             db_data = response.json()
             db_data = DEncrypt.decrypt_from_json(db_data)
+
+            debug_MobileApp.info(f'\tresponse{db_data['status'] = }')
 
             # TODO: Review the popup... needs work
             if db_data['status'] == 'True':
@@ -1186,6 +1249,15 @@ class ReStock(Screen):
             main_app.screen_manager.transition.direction = 'right'
             main_app.screen_manager.current = 'Main Screen'
 
+    def button_addstock_cancel(self, val:str):
+        if val == 'cancel':
+            self.dialog.dismiss()
+        elif val == 'new':
+            self.dialog.dismiss()
+            main_app.screen_manager.transition.direction = 'up'
+            main_app.screen_manager.current = 'Add Stock Entry'
+            main_app.addstockentry_screen.display_text_input()
+
     def button_plus(self):
         a = self.number_of_items.text
         try:
@@ -1210,13 +1282,14 @@ class ReStock(Screen):
         #TODO: Note: for the 'search' list[tuples] -> list[dict] like {'blue pen': 1} Use dict.keys -> list[keys] and use 'FuzzyWuzzy' ^_^
 
 
+# Adding Items/Storage etc.
 class AddItem(Screen):
     name_items = ObjectProperty(None)
     desc_item = ObjectProperty(None)
     dialog = None
 
     def button_submit(self):
-        debug_MobileApp.info('Ading Item')
+        debug_MobileApp.info('Submit Ading Item')
         print('Ading Item:')
 
         item_name = self.name_items.text
@@ -1244,6 +1317,7 @@ class AddItem(Screen):
                 'item_name': item_name,
                 'item_desc': item_desc
             }
+            debug_MobileApp.info(f'\t{data_package = }')
 
             # TODO: add check for 'Click to Select'... popup error blank field...
 
@@ -1258,6 +1332,8 @@ class AddItem(Screen):
             # decrypt response
             db_data = response.json()
             db_data = DEncrypt.decrypt_from_json(db_data)
+
+            debug_MobileApp.info(f'\t{db_data['status'] = }')
 
             # TODO: Review the popup... needs work
             if db_data['status'] == 'True':
@@ -1358,15 +1434,14 @@ class AddItem(Screen):
         main_app.screen_manager.transition.direction = 'right'
         main_app.screen_manager.current = 'Main Screen'
 
-
 class AddStorage(Screen):
     name_storage = ObjectProperty(None)
     location_storage = ObjectProperty(None)
     dialog = None
 
     def button_submit(self):
-        debug_MobileApp.info('Ading Item')
-        print('Ading Item:')
+        debug_MobileApp.info('Submit Adding Storage')
+        print('Adding Storage:')
 
         storage_name = self.name_storage.text
         storage_location = self.location_storage.text
@@ -1397,12 +1472,13 @@ class AddStorage(Screen):
                 'item_name': storage_name,
                 'item_desc': storage_location
             }
+            debug_MobileApp.info(f'\t{data_package = }')
 
             # TODO: add check for 'Click to Select'... popup error blank field...
 
             # Encrypt and Send data
             data_package = DEncrypt.encrypt_to_json(data_package)
-            addr = f'{DATA.connection_ip}/additem'
+            addr = f'{DATA.connection_ip}/addstorage'
             response = requests.post(
                 addr,
                 json=data_package
@@ -1411,6 +1487,8 @@ class AddStorage(Screen):
             # decrypt response
             db_data = response.json()
             db_data = DEncrypt.decrypt_from_json(db_data)
+
+            debug_MobileApp.info(f'\t{db_data['status'] = }')
 
             # TODO: Review the popup... needs work
             if db_data['status'] == 'True':
@@ -1512,10 +1590,346 @@ class AddStorage(Screen):
         main_app.screen_manager.current = 'Main Screen'
 
 class AddWorker(Screen):
-    pass
+    name_worker = ObjectProperty(None)
+    num_worker = ObjectProperty(None)
+    dialog = None
+
+    def button_submit(self):
+        debug_MobileApp.info('Submit Adding Worker')
+        print('Adding Worker:')
+
+        worker_name = self.name_items.text
+        worker_num = self.desc_item.text
+
+        print(f'Char {len(worker_name)}/100 - {len(worker_num)}/100')
+
+        # Validation
+        if len(worker_name) > 100:
+            print('\tPopup Name to long!')
+            return
+
+        if len(worker_num) > 100:
+            print('\tPopup number to long!')
+            return
+
+        if len(worker_name) < 5:
+            print('\tPopup Name to Short!')
+            return
+
+        try:
+            # Get data:
+            data_package = {
+                'user_id': "1",  # DATA.db_data['user_id'],
+                'worker_name': worker_name,
+                'worker_num': worker_num
+            }
+            debug_MobileApp.info(f'\t{data_package = }')
+
+            # TODO: add check for 'Click to Select'... popup error blank field...
+
+            # Encrypt and Send data
+            data_package = DEncrypt.encrypt_to_json(data_package)
+            addr = f'{DATA.connection_ip}/addworker'
+            response = requests.post(
+                addr,
+                json=data_package
+            )
+
+            # decrypt response
+            db_data = response.json()
+            db_data = DEncrypt.decrypt_from_json(db_data)
+
+            debug_MobileApp.info(f'\t{db_data['status'] = }')
+
+            # TODO: Review the popup... needs work
+            if db_data['status'] == 'True':
+
+                # Popup list:
+                self.dialog = MDDialog(
+                    title='Operation Status:',
+                    type="confirmation",
+                    items=[
+                        TwoLineAvatarIconListItem(
+                            IconLeftWidget(
+                                icon='emoticon-happy'
+                                # theme_icon_color="Custom",
+                                # icon_color=color
+                            ),
+                            IconRightWidget(
+                                icon='account'
+                                # id=f"{server['Index']}",
+                                # on_release=self.delete_button
+                            ),
+                            text=f"Worker Added Successfully!",
+                            secondary_text=f'Add Other Worker?',
+                            # id=f"{entry[0]}",
+                            # on_release=self.item_clicked
+                        )
+                    ],
+                    buttons=[
+                        MDFlatButton(
+                            text="Done",
+                            theme_text_color="Custom",
+                            # text_color=self.theme_cls.primary_color,
+                            id='done',
+                            on_release=lambda x: self.button_yes_no('done')
+                        ),
+                        MDFlatButton(
+                            text="New",
+                            theme_text_color="Custom",
+                            # text_color=self.theme_cls.primary_color,
+                            id='new',
+                            on_release=lambda x: self.button_yes_no('new')
+                        )
+                    ]
+                )
+                self.dialog.open()
+                debug_MobileApp.info('\tAll good')
+
+            elif db_data['status'] == 'False':
+                print(f"\tOperation Failed! {db_data['status'] = }")
+                debug_MobileApp.error('\tOperation Failed!')
+                open_popup(
+                    title="Operation Status:",
+                    icon='emoticon-sad',
+                    text_1="An Error Has Occurred!",
+                    text_2='Worker NOT Added!',
+                    text_3='Try again later...'
+                )
+            else:
+                print("Error... Opps..")
+                debug_MobileApp.error('\tOperation Failed! data error...')
+                open_popup(
+                    title="Operation Status:",
+                    icon='robot-confused',
+                    text_1="An Error Has Occurred!",
+                    text_2='data error...',
+                    text_3='Try again later...'
+                )
+
+        except Exception as err:
+            debug_MobileApp.error(f'\tError Restocking Storage: {err}')
+            open_popup(
+                title="Failed to Connect:",
+                icon='emoticon-sad',
+                text_1="Error Adding worker!",
+                text_2='Check Internet Connection',
+                text_3='Or Try Again Later'
+            )
+
+    def button_yes_no(self, val: str):
+        if val == 'new':
+            self.reset_fields()
+            self.dialog.dismiss()
+            # self.display_fields()
+        elif val == 'done':
+            self.reset_fields()
+            self.dialog.dismiss()
+            main_app.screen_manager.transition.direction = 'right'
+            main_app.screen_manager.current = 'Main Screen'
+
+    def reset_fields(self):
+        # TODO: reset doesn't clean the fields... love bugs... -.-
+        self.name_worker.text = ''
+        self.num_worker.text = ''
+
+    def button_cancel(self):
+        # Reset all
+        self.reset_fields()
+        # Go back to main screen
+        main_app.screen_manager.transition.direction = 'right'
+        main_app.screen_manager.current = 'Main Screen'
+
 
 class AddUser(Screen):
+    # TODO: add users - Only Admin Should Add Users!
     pass
+
+
+# Stock Entry
+class AddStockEntry(Screen):
+    storage_max = ObjectProperty(None)
+    storage_min = ObjectProperty(None)
+    storage_name = ObjectProperty(None)
+    item_name = ObjectProperty(None)
+
+    def display_text_input(self):
+        '''
+        expects:
+
+        DATA.popup_data{
+        'source': "menu name to go back to",
+        'item': item id
+        'storage': storage_id
+        }
+        '''
+        # get names:
+        for i in DATA.db_data['items']:
+            if str(i[0]) == str(DATA.popup_data['item']):
+                self.item_name.text = i[1]
+
+        for i in DATA.db_data['storage']:
+            if str(i[0]) == str(DATA.popup_data['storage']):
+                self.storage_name.text = i[1]
+
+        print(f'\t{self.item_name.text = }')
+        print(f'\t{self.storage_name.text = }')
+        debug_MobileApp.info('Add Stock Entry')
+        debug_MobileApp.info(f'\t{self.item_name.text = }')
+        debug_MobileApp.info(f'\t{self.storage_name.text = }')
+
+
+    def button_submit(self):
+        debug_MobileApp.info('Adding Stock Entry')
+
+        print(f'{self.item_name.text = }')
+        print(f'{self.storage_name.text = }')
+        print(f'{self.storage_min.text = }')
+        print(f'{self.storage_max.text = }')
+        # get data
+        min = self.storage_min.text
+        max = self.storage_max.text
+
+        # Validate data
+        if len(min) > 4 or len(max) > 4:
+            print('to long!')
+            debug_MobileApp.error(f'\tNumber of Items, is NOT a Number!')
+            open_popup(
+                title="Input Error!",
+                icon='emoticon-sad',
+                text_1="Number of Items",
+                text_2='Must be a Number!',
+                text_3='From 1 to 9999'
+            )
+            return
+
+        if len(min) == 0:
+            min = 0
+        if len(max) == 0:
+            max = 0
+
+        try:
+            min = int(min)
+            max = int(max)
+        except:
+            print('Not numbers!')
+            debug_MobileApp.error(f'\tNumber of Items, is NOT a Number!')
+            open_popup(
+                title="Input Error!",
+                icon='emoticon-sad',
+                text_1="Number of Items",
+                text_2='Must be a Number!',
+                text_3='From 1 to 9999'
+            )
+            return
+
+        # send to server
+        try:
+            # Get data:
+            data_package = {
+                'storage_id': DATA.popup_data['storage'],
+                'item_id': DATA.popup_data['item'],
+                'unit_min': min,
+                'unit_max': max
+            }
+            debug_MobileApp.info(f'\t{data_package = }')
+
+            # TODO: add check for 'Click to Select'... popup error blank field...
+
+            # Encrypt and Send data
+            data_package = DEncrypt.encrypt_to_json(data_package)
+            addr = f'{DATA.connection_ip}/addfirststock'
+            response = requests.post(
+                addr,
+                json=data_package
+            )
+
+            # decrypt response
+            db_data = response.json()
+            db_data = DEncrypt.decrypt_from_json(db_data)
+
+            debug_MobileApp.info(f'\tresponse{db_data['status'] = }')
+
+            # TODO: Review the popup... needs work
+            if db_data['status'] == 'True':
+
+                # Popup list:
+                self.dialog = MDDialog(
+                    title='Operation Status:',
+                    type="confirmation",
+                    items=[
+                        TwoLineAvatarIconListItem(
+                            IconLeftWidget(
+                                icon='emoticon-happy'
+                                # theme_icon_color="Custom",
+                                # icon_color=color
+                            ),
+                            IconRightWidget(
+                                icon='pen'
+                            ),
+                            text=f"First Stock Add!",
+                            secondary_text=f'Back to Restock'
+                        )
+                    ],
+                    buttons=[
+                        MDFlatButton(
+                            text="Ok",
+                            theme_text_color="Custom",
+                            # text_color=self.theme_cls.primary_color,
+                            id='done',
+                            on_release=lambda x: self.button_yes_no('done')
+                        )
+                    ]
+                )
+                self.dialog.open()
+                debug_MobileApp.info('\tAll good')
+
+            elif db_data['status'] == 'False':
+                print(f"\tOperation Failed! {db_data['status'] = }")
+                debug_MobileApp.error('\tOperation Failed!')
+                open_popup(
+                    title="Operation Status:",
+                    icon='emoticon-sad',
+                    text_1="An Error Has Occurred!",
+                    text_2='First Stock NOT Created!',
+                    text_3='Try again later...'
+                )
+            else:
+                print("Error... Opps..")
+                debug_MobileApp.error('\tOperation Failed! data error...')
+                open_popup(
+                    title="Operation Status:",
+                    icon='robot-confused',
+                    text_1="An Error Has Occurred!",
+                    text_2='data error...',
+                    text_3='Try again later...'
+                )
+
+        except Exception as err:
+            debug_MobileApp.error(f'\tError Restocking Storage: {err}')
+            open_popup(
+                title="Failed to Connect:",
+                icon='emoticon-sad',
+                text_1="ErrorFirstStock!",
+                text_2='Check Internet Connection',
+                text_3='Or Try Again Later'
+            )
+
+    def button_yes_no(self, val: str):
+        if val == 'back':
+            # reload data:
+            main_app.main_screen.get_data_from_server()
+            # go back:
+            main_app.screen_manager.transition.direction = 'down'
+            main_app.screen_manager.current = DATA.popup_data['source']
+        elif val == 'done':
+            #self.reset_fields()
+            self.dialog.dismiss()
+            # reload data:
+            main_app.main_screen.get_data_from_server()
+            # go back:
+            main_app.screen_manager.transition.direction = 'down'
+            main_app.screen_manager.current = DATA.popup_data['source']
 
 
 
@@ -1563,7 +1977,6 @@ def open_popup(title:str, text_1:str, text_2:str='', text_3:str='', icon:str='al
 
 
 
-
 # Custom widgets:
 class YourContainer(IRightBodyTouch, MDBoxLayout):
     # use for TwoLineAvatarIconListItem: with 2 left items
@@ -1602,10 +2015,6 @@ class Main(MDApp):
         self.screen_manager = ScreenManager()
 
 
-
-
-
-
         # First Screen -> LOGIN!!! ^_^
         self.login_screen = LoginScreen()
         screen = Screen(name='Login Screen')
@@ -1640,7 +2049,18 @@ class Main(MDApp):
         screen.add_widget(self.addstorage_screen)
         self.screen_manager.add_widget(screen)
 
+        # AddWorker
+        self.addworker_screen = AddWorker()
+        screen = Screen(name='Add Worker')
+        screen.add_widget(self.addworker_screen)
+        self.screen_manager.add_widget(screen)
 
+
+        # Add AddStockEntry
+        self.addstockentry_screen = AddStockEntry()
+        screen = Screen(name='Add Stock Entry')
+        screen.add_widget(self.addstockentry_screen)
+        self.screen_manager.add_widget(screen)
 
 
         return self.screen_manager

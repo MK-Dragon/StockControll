@@ -218,8 +218,8 @@ def add_worker():
 
         # Save data do DataBase
         status_item = db.Add_Worker(
-            name=entry_data[''],
-            number=entry_data['']
+            name=entry_data['worker_name'],
+            number=entry_data['worker_num']
         )
 
         # response:
@@ -272,8 +272,76 @@ def add_user():
     except Exception as err:
         debug_flask_server.error(f'Error: {err}')
 
+
 # + First Stock
-@app.route('/addfirstrestock', methods=['POST'])
+@app.route('/addfirststock', methods=['POST'])
+def add_first_stock():
+    #TODO: needs testing
+    debug_flask_server.info('/Adding First Stock -> posted')
+    try:
+        # Get & decrypt data
+        entry_data = request.get_json()
+        entry_data = DEncrypt.decrypt_from_json(entry_data)
+        debug_flask_server.info(f'\tDecrypted: {entry_data}')
+
+        # Save data do DataBase
+        status_f_stock = db.Add_First_Stock_Entry(
+            storage_id=entry_data['storage_id'],
+            item_id=entry_data['item_id'],
+            unit_min=entry_data['unit_min'],
+            unit_max=entry_data['unit_max']
+        )
+
+        # response:
+        if status_f_stock:
+            resp = {
+                'status': 'True'
+            }
+            debug_flask_server.info('\tSuccessfully Saved')
+        else:
+            resp = {
+                'status': 'False'
+            }
+            debug_flask_server.error(f'\tFailed to save to DataBase: {status_f_stock = }')
+        # Encrypt and Send
+        resp = DEncrypt.encrypt_to_json(resp)
+        return jsonify(resp)
+    except Exception as err:
+        debug_flask_server.error(f'Error: {err}')
+
+
+# Get Information:
+
+@app.route('/reload', methods=['GET'])
+def reload_data():
+    # TODO do Special read for users with only usernames! NO PASSWORDS!!!
+    resp = {
+        'worker': db.Read_Full_Table('colaboradores'),
+        'storage': db.Read_Full_Table('armarios'),
+        'items': db.Read_Full_Table('items'),
+        'stock': db.Read_Full_Table('stock'),
+        'restock': db.Complex_Read_Table(
+            table='restock',
+            num_results=50,
+            order_by='id',
+            order_desc=True
+        ),
+        'delivered': db.Complex_Read_Table(
+            table='entrega',
+            num_results=50,
+            order_by='id',
+            order_desc=True
+        )
+    }
+    resp = DEncrypt.encrypt_to_json(resp)
+    return resp
+
+
+
+# ?? Remove or Edit ??
+
+# not in use...
+'''@app.route('/addfirstrestock', methods=['POST'])
 def add_first_restock():
     #TODO: needs testing
     debug_flask_server.info('/Adding First Restock -> posted')
@@ -355,38 +423,7 @@ def add_first_deliver_item():
         resp = DEncrypt.encrypt_to_json(resp)
         return jsonify(resp)
     except Exception as err:
-        debug_flask_server.error(f'Error: {err}')
-
-
-# Get Information:
-
-@app.route('/reload', methods=['GET'])
-def reload_data():
-    # TODO do Special read for users with only usernames! NO PASSWORDS!!!
-    resp = {
-        'worker': db.Read_Full_Table('colaboradores'),
-        'storage': db.Read_Full_Table('armarios'),
-        'items': db.Read_Full_Table('items'),
-        'stock': db.Read_Full_Table('stock'),
-        'restock': db.Complex_Read_Table(
-            table='restock',
-            num_results=50,
-            order_by='id',
-            order_desc=True
-        ),
-        'delivered': db.Complex_Read_Table(
-            table='entrega',
-            num_results=50,
-            order_by='id',
-            order_desc=True
-        )
-    }
-    resp = DEncrypt.encrypt_to_json(resp)
-    return resp
-
-
-
-# ?? Remove or Edit ??
+        debug_flask_server.error(f'Error: {err}')'''
 
 
 # Not in use...
