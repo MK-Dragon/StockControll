@@ -740,7 +740,7 @@ class DeliverItem(Screen):
             db_data = response.json()
             db_data = DEncrypt.decrypt_from_json(db_data)
 
-            debug_MobileApp.info(f'\tresponce{db_data['status'] = }')
+            debug_MobileApp.info(f'\tresponce{db_data["status"] = }')
 
             # TODO: Review the popup... needs work
             if db_data['status'] == 'True':
@@ -1160,7 +1160,7 @@ class ReStock(Screen):
             db_data = response.json()
             db_data = DEncrypt.decrypt_from_json(db_data)
 
-            debug_MobileApp.info(f'\tresponse{db_data['status'] = }')
+            debug_MobileApp.info(f'\tresponse{db_data["status"] = }')
 
             # TODO: Review the popup... needs work
             if db_data['status'] == 'True':
@@ -1333,7 +1333,7 @@ class AddItem(Screen):
             db_data = response.json()
             db_data = DEncrypt.decrypt_from_json(db_data)
 
-            debug_MobileApp.info(f'\t{db_data['status'] = }')
+            debug_MobileApp.info(f'\t{db_data["status"] = }')
 
             # TODO: Review the popup... needs work
             if db_data['status'] == 'True':
@@ -1488,7 +1488,7 @@ class AddStorage(Screen):
             db_data = response.json()
             db_data = DEncrypt.decrypt_from_json(db_data)
 
-            debug_MobileApp.info(f'\t{db_data['status'] = }')
+            debug_MobileApp.info(f'\t{db_data["status"] = }')
 
             # TODO: Review the popup... needs work
             if db_data['status'] == 'True':
@@ -1639,7 +1639,7 @@ class AddWorker(Screen):
             db_data = response.json()
             db_data = DEncrypt.decrypt_from_json(db_data)
 
-            debug_MobileApp.info(f'\t{db_data['status'] = }')
+            debug_MobileApp.info(f'\t{db_data["status"] = }')
 
             # TODO: Review the popup... needs work
             if db_data['status'] == 'True':
@@ -1848,7 +1848,7 @@ class AddStockEntry(Screen):
             db_data = response.json()
             db_data = DEncrypt.decrypt_from_json(db_data)
 
-            debug_MobileApp.info(f'\tresponse{db_data['status'] = }')
+            debug_MobileApp.info(f'\tresponse{db_data["status"] = }')
 
             # TODO: Review the popup... needs work
             if db_data['status'] == 'True':
@@ -2067,6 +2067,6 @@ class Main(MDApp):
 
 
 if __name__ == '__main__':
-    Window.size = (405, 700)  #TODO: Remove before py --> apk / it bugs the mobile App...
+    #Window.size = (405, 700)  #TODO: Remove before py --> apk / it bugs the mobile App...
     main_app = Main()
     main_app.run()
