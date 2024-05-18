@@ -1598,8 +1598,8 @@ class AddWorker(Screen):
         debug_MobileApp.info('Submit Adding Worker')
         print('Adding Worker:')
 
-        worker_name = self.name_items.text
-        worker_num = self.desc_item.text
+        worker_name = self.name_worker.text
+        worker_num = self.num_worker.text
 
         print(f'Char {len(worker_name)}/100 - {len(worker_num)}/100')
 
@@ -2067,6 +2067,6 @@ class Main(MDApp):
 
 
 if __name__ == '__main__':
-    #Window.size = (405, 700)  #TODO: Remove before py --> apk / it bugs the mobile App...
+    Window.size = (405, 700)  #TODO: Remove before py --> apk / it bugs the mobile App...
     main_app = Main()
     main_app.run()

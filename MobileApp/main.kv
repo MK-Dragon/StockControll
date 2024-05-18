@@ -136,6 +136,7 @@
                                 root.button_go_to_add_item()
                             pos_hint: {"center_x": .9, "center_y": .1}
                             elevation: 1
+                            width: root.width*0.40
 
                         MDRectangleFlatIconButton:
                             icon: "locker"
@@ -148,6 +149,7 @@
                                 root.button_go_to_add_storage()
                             pos_hint: {"center_x": .9, "center_y": .1}
                             elevation: 1
+                            width: root.width*0.40
 
                         MDRectangleFlatIconButton:
                             icon: "account"
@@ -160,18 +162,19 @@
                                 root.button_go_to_add_worker()
                             pos_hint: {"center_x": .9, "center_y": .1}
                             elevation: 1
+                            width: root.width*0.40
 
-                        MDRectangleFlatIconButton:
-                            icon: "duck"
-                            icon_color: 'white'
-                            text: "New User"
-                            theme_text_color: "Custom"
-                            text_color: "white"
-                            md_bg_color: app.theme_cls.primary_color
-                            on_release:
-                                root.button_go_to_add_stock_entry()
-                            pos_hint: {"center_x": .9, "center_y": .1}
-                            elevation: 1
+                        #MDRectangleFlatIconButton:
+                            #icon: "duck"
+                            #icon_color: 'white'
+                            #text: "New User"
+                            #theme_text_color: "Custom"
+                            #text_color: "white"
+                            #md_bg_color: app.theme_cls.primary_color
+                            #on_release:
+                                #root.button_go_to_add_stock_entry()
+                            #pos_hint: {"center_x": .9, "center_y": .1}
+                            #elevation: 1
 
                     MDScrollView:
                         MDList:
@@ -187,7 +190,6 @@
                             text: ""
                             color: (0,0,0,0)
 
-                        #MDFloatingActionButton:
                         MDRectangleFlatIconButton:
                             icon: "locker"
                             icon_color: 'white'
@@ -199,8 +201,8 @@
                                 root.button_go_to_restock()
                             pos_hint: {"center_x": .9, "center_y": .1}
                             elevation: 1
+                            width: root.width*0.40
 
-                        #MDFloatingActionButton:
                         MDRectangleFlatIconButton:
                             text: 'Deliver Item'
                             theme_text_color: "Custom"
@@ -212,6 +214,8 @@
                                 root.button_go_to_add_entry()
                             pos_hint: {"center_x": .9, "center_y": .1}
                             elevation: 1
+                            width: root.width*0.40
+
 
                         # Spacer to align left
                         Label:
@@ -701,10 +705,10 @@
             MDTextField:
                 size_hint_x: None
                 id: num_worker
-                hint_text: " Item Description"
+                hint_text: "ID Number"
                 multiline: True
                 max_text_length:100
-                icon_left: "notebook"
+                icon_left: "sort-numeric-variant"
                 mode: "rectangle"
                 background_color: app.theme_cls.bg_normal
                 width: root.width*0.75
