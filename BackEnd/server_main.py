@@ -491,4 +491,12 @@ def my_test_endpoint():
 
 
 if __name__ == '__main__':
-   app.run(debug=True, host='0.0.0.0') # add host='0.0.0.0' to use it on LAN
+    a, b = db.CreateDB()
+    if a == b:
+        debug_flask_server.info(f'DataBase Created [{a}/{b}]')
+        db.Add_User('Admin', '123')
+    elif a == 0:
+        debug_flask_server.info(f'DataBase Already Exists [{a}/{b}]')
+    else:
+        debug_flask_server.error(f'Tables Created: [{a}/{b}]')
+    app.run(debug=True, host='0.0.0.0') # add host='0.0.0.0' to use it on LAN

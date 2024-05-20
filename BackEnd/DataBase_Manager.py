@@ -672,7 +672,7 @@ if __name__ == '__main__':
     # Add test Users
     Add_User('Admin', '123')
     Add_User('Marco', '12345')
-    Add_User('Polo', '54321')
+    Add_User('Renata', '123')
 
     # Add test Colaboradores/workers
     Add_Worker('Zé', 12345)
