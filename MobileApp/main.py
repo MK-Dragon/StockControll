@@ -58,7 +58,8 @@ def setup_logger(name, log_file, level=logging.INFO): #TODO: change INFO to ERRO
 
 
 # Debug DB Read/Write/Delete
-debug_MobileApp = setup_logger('mobile app', 'logs/app.log')
+#debug_MobileApp = setup_logger('mobile app', 'logs/app.log')
+debug_MobileApp = setup_logger('mobile app', 'app.log')
 debug_MobileApp.info('---//---')
 
 

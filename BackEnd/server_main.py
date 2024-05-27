@@ -22,7 +22,8 @@ def setup_logger(name, log_file, level=logging.INFO):
 
     return logger
 
-debug_flask_server = setup_logger('flask server', 'logs/flaskserver.log')
+#debug_flask_server = setup_logger('flask server', 'logs/flaskserver.log')
+debug_flask_server = setup_logger('flask server', 'flaskserver.log')
 debug_flask_server.info('---//---')
 
 app = Flask(__name__)

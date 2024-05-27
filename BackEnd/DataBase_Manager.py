@@ -6,7 +6,8 @@ import logging
 from tabulate import tabulate
 
 # globals
-DB_FILE = 'DataBase/database.db'
+#DB_FILE = 'DataBase/database.db'
+DB_FILE = 'database.db'
 
 
 # Setup logging:
@@ -26,7 +27,8 @@ def setup_logger(name, log_file, level=logging.INFO):
 
 
 # Debug DB Read/Write/Delete
-debug_DataBase = setup_logger('create database', 'logs/database.log')
+#debug_DataBase = setup_logger('create database', 'logs/database.log')
+debug_DataBase = setup_logger('create database', 'database.log')
 debug_DataBase.info('---//---')
 
 
@@ -40,58 +42,8 @@ def Connect_to_DB():
     except Exception as err:
         debug_DataBase.error(f'Err Opening DB: {err}')
 
-def Ex_SQL_Code(code:str, values:tuple = None) -> bool:
-    '''Executes Code and Returns True or False if it fails'''
-    # Connect to database:
-    conn, cursor = Connect_to_DB()
-    try:
-        # execute and commit
-        if values == None:
-            cursor.execute(code)
-        else:
-            cursor.execute(code, values)
-        conn.commit()
-        # Close Connection and return True
-        cursor.close()
-        conn.close()
-        return True
-    except Exception as err:
-        # Return False and log Error
-        debug_DataBase.error(f'\tError: {err}')
-        # Close Connection and return False
-        cursor.close()
-        conn.close()
-        return False
 
-def Query_SQL_Code(query_code:str, values:tuple = None) -> list[tuple]:
-    '''
-    Executes the code and returns Query data or False if it fails
-    :return: list[tuple] or False if fails
-    '''
-    # Connect to databse:
-    conn, cursor = Connect_to_DB()
-    try:
-        # Fetch data!
-        if values == None:
-            cursor.execute(query_code)
-        else:
-            cursor.execute(query_code, values)
-        table_data = cursor.fetchall()
-        # Log results:
-        debug_DataBase.info(f"\t\tQuery Result:")
-        for entry in table_data:
-            debug_DataBase.info(f'\t\t\t{entry}')
-        # Close Connection
-        cursor.close()
-        conn.close()
-        return table_data
 
-    except Exception as err:
-        debug_DataBase.error(f'\tError: {err}')
-        # Close Connection
-        cursor.close()
-        conn.close()
-        return False
 
 
 
