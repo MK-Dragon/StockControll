@@ -2,3 +2,5 @@ To run the App, please run the Server component first, as without it there is no
 
 For more updates check my GitHube. link below:
 https://github.com/MK-Dragon/StockControll
+
+
